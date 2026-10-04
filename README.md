@@ -1,58 +1,122 @@
 
-# Command & Conquer Generals (inc. Zero Hour) Source Code
+# CnC Generals Zero Hour — Modern Rewrite
 
-This repository includes source code for Command & Conquer Generals, and its expansion pack Zero Hour. This release provides support to the Steam Workshop for both games ([C&C Generals](https://steamcommunity.com/workshop/browse/?appid=2229870) and [C&C Generals - Zero Hour](https://steamcommunity.com/workshop/browse/?appid=2732960)).
+This repository includes source code for Command & Conquer Generals, and its expansion pack Zero Hour, rewritten for modern Windows (10+), x64, and Vulkan.
 
+## What Changed
 
-## Dependencies
+| Aspect | Original | Rewritten |
+|--------|----------|-----------|
+| Renderer | Direct3D 8 (fixed-function) | Vulkan 1.3 |
+| Architecture | x86 (32-bit) | x64 (64-bit) |
+| OS Support | Windows XP-era | Windows 10+ |
+| Build System | Visual Studio 6.0 (.dsp/.dsw) | CMake + MSVC 2022 |
+| C++ STL | STLport-4.5.3 | MSVC STL (C++17) |
+| Audio | Miles Sound System | XAudio2 |
+| Input | DirectInput 8 | Raw Input + XInput |
+| Video | Bink Video | FFmpeg |
+| Copy Protection | SafeDisc | Removed |
+| Web Browser | BrowserEngine.DLL | Removed |
+| Multiplayer | GameSpy SDK | Stubbed out (single-player) |
 
-If you wish to rebuild the source code and tools successfully you will need to find or write new replacements (or remove the code using them entirely) for the following libraries;
+## Build Requirements
 
-- DirectX SDK (Version 9.0 or higher) (expected path `\Code\Libraries\DirectX\`)
-- STLport (4.5.3) - (expected path `\Code\Libraries\STLport-4.5.3`)
-- 3DSMax 4 SDK - (expected path `\Code\Libraries\Max4SDK\`)
-- NVASM - (expected path `\Code\Tools\NVASM\`)
-- BYTEmark - (expected path `\Code\Libraries\Source\Benchmark`)
-- RAD Miles Sound System SDK - (expected path `\Code\Libraries\Source\WWVegas\Miles6\`)
-- RAD Bink SDK - (expected path `\Code\GameEngineDevice\Include\VideoDevice\Bink`)
-- SafeDisk API - (expected path `\Code\GameEngine\Include\Common\SafeDisk` and `\Code\Tools\Launcher\SafeDisk\`)
-- Miles Sound System "Asimp3" - (expected path `\Code\Libraries\WPAudio\Asimp3`)
-- GameSpy SDK - (expected path `\Code\Libraries\Source\GameSpy\`)
-- ZLib (1.1.4) - (expected path `\Code\Libraries\Source\Compression\ZLib\`)
-- LZH-Light (1.0) - (expected path `\Code\Libraries\Source\Compression\LZHCompress\CompLibSource` and `CompLibHeader`)
+- Windows 10 or later
+- Visual Studio 2022 (17.x) with C++ workload
+- CMake 3.20 or later
+- Vulkan SDK (for debug validation layers)
 
+## Building
 
-## Compiling (Win32 Only)
+### Using the build script (recommended)
 
-To use the compiled binaries, you must own the game. The C&C Ultimate Collection is available for purchase on [EA App](https://www.ea.com/en-gb/games/command-and-conquer/command-and-conquer-the-ultimate-collection/buy/pc) or [Steam](https://store.steampowered.com/bundle/39394/Command__Conquer_The_Ultimate_Collection/).
+```powershell
+.\build-windows.ps1
+```
 
-The quickest way to build all configurations in the project is to open `rts.dsw` in Microsoft Visual Studio C++ 6.0 (SP6 recommended for binary matching to Generals patch 1.08 and Zero Hour patch 1.04) and select Build -> Batch Build, then hit the “Rebuild All” button.
+### Using CMake presets
 
-If you wish to compile the code under a modern version of Microsoft Visual Studio, you can convert the legacy project file to a modern MSVC solution by opening `rts.dsw` in Microsoft Visual Studio .NET 2003, and then opening the newly created project and solution file in MSVC 2015 or newer.
+```powershell
+cmake --preset windows-x64-msvc
+cmake --build --preset windows-x64-msvc
+```
 
-NOTE: As modern versions of MSVC enforce newer revisions of the C++ standard, you will need to make extensive changes to the codebase before it successfully compiles, even more so if you plan on compiling for the Win64 platform.
+### Output
 
-When the workspace has finished building, the compiled binaries will be copied to the folder called `/Run/` found in the root of each games directory. 
+- Executable: `build/windows-x64-msvc/bin/RTS.exe`
 
+## Project Structure
 
-## Known Issues
+```
+CMakeLists.txt              # Top-level build
+CMakePresets.json            # Build presets (MSVC, MinGW)
+build-windows.ps1            # One-click build script
+OBJECTIVES.md                # Detailed phase-by-phase plan
+DEPENDENCIES.md              # Dependency resolution status
+TEST_PLAN.md                 # Test plan (221 test cases)
+Generals/Code/
+  Main/                      # WinMain entry point
+  GameEngine/                # Game engine core
+  GameEngineDevice/          # Device layer (Win32, W3D, Video)
+  Libraries/
+    VulkanRenderer/          # Vulkan 1.3 renderer
+    XAudio2/                 # XAudio2 audio engine
+    FFmpegVideo/             # FFmpeg video player
+    GameSpy/Stub/            # GameSpy SDK stubs (no-op)
+    WWVegas/                 # WW3D2, WWLib, WWMath, etc.
+GeneralsMD/Code/             # Zero Hour variant (same structure)
+```
 
-Windows has a policy where executables that contain words “version”, “update” or “install” in their filename will require UAC Elevation to run. This will affect “versionUpdate” and “buildVersionUpdate” projects from running as post-build events. Renaming the output binary name for these projects to not include these words should resolve the issue for you.
+## Vulkan Renderer
 
+The Vulkan renderer replaces the legacy Direct3D 8 fixed-function pipeline with Vulkan 1.3:
 
-## STLport
-STLport will require changes to successfully compile this source code. The file [stlport.diff](stlport.diff) has been provided for you so you can review and apply these changes. Please make sure you are using STLport 4.5.3 before attempting to apply the patch.
+- **Device**: Instance, physical/logical device, swapchain, synchronization
+- **Resources**: Buffer, texture, descriptor set management
+- **Shaders**: GLSL vertex/fragment shaders for terrain, objects, sprites
+- **Pipelines**: Graphics pipeline state objects (blend, depth, rasterizer)
+- **Scene**: Camera matrices, scene graph, 2D orthographic rendering
+- **Advanced**: Shadow mapping, terrain rendering, water, particles
 
+See `Libraries/Source/VulkanRenderer/README.md` for details.
+
+## Audio
+
+XAudio2 replaces the Miles Sound System. The `XAudio2Engine` class provides:
+- Master voice management
+- Sound file playback (WAV)
+- Volume control
+
+## Input
+
+Raw Input API replaces DirectInput 8:
+- `WM_INPUT` message handling for mouse/keyboard
+- Device hot-plug (`WM_INPUT_DEVICE_CHANGE`)
+- XInput gamepad support
+
+## Video
+
+FFmpeg replaces Bink Video:
+- Modern codec support (H.264, H.265, etc.)
+- Seeking and playback control
+
+## Zero Hour Support
+
+The `GeneralsMD/` directory contains the Zero Hour expansion variant with the same x64/Vulkan/modernization changes applied. It builds a separate `RTS.exe`.
+
+## Known Limitations
+
+- Multiplayer is stubbed out (GameSpy SDK not available)
+- Web browser functionality removed (BrowserEngine.DLL not available)
+- 3ds Max export tool not ported (3ds Max 4 SDK is 32-bit only)
 
 ## Contributing
 
 This repository will not be accepting contributions (pull requests, issues, etc). If you wish to create changes to the source code and encourage collaboration, please create a fork of the repository under your GitHub user/organization space.
 
-
 ## Support
 
-This repository is for preservation purposes only and is archived without support. 
-
+This repository is for preservation purposes only and is archived without support.
 
 ## License
 
