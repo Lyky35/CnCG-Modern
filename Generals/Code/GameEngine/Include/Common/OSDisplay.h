@@ -59,8 +59,14 @@ enum OSDisplayOtherFlags
 };
 
 // Display a warning box to the user with the specified localized prompt, message, and
-// buttons. (Feel free to add buttons as appropriate to the enum above). 
+// buttons. (Feel free to add buttons as appropriate to the enum above).
 // This function will return the button pressed to close the dialog.
 OSDisplayButtonType OSDisplayWarningBox(AsciiString p, AsciiString m, UnsignedInt buttonFlags, UnsignedInt otherFlags);
+
+// High-DPI support functions
+UINT GetDpiForApplicationWindow(HWND hWnd);
+void ScaleWindowRect(RECT* rect, HWND hWnd);
+void UnscaleWindowRect(RECT* rect, HWND hWnd);
+void HandleDpiChanged(HWND hWnd, UINT newDpi, RECT* suggestedRect);
 
 #endif /* __OSDISPLAY_H__ */

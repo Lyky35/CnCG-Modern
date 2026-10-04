@@ -1234,19 +1234,6 @@ void GameSpyPlayerInfoOverlayInit( WindowLayout *layout, void *userData )
 	GadgetCheckBoxSetChecked(checkBoxAsianFont,!pref.getDisallowAsianText());
 	GadgetCheckBoxSetChecked(checkBoxNonAsianFont,!pref.getDisallowNonAsianText());
 
-	OSVERSIONINFO	osvi;
-	osvi.dwOSVersionInfoSize=sizeof(OSVERSIONINFO);
-	if (GetVersionEx(&osvi))
-	{	//check if we're running Win9x variant since they may need different fonts
-		if (osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
-		{
-			if (checkBoxAsianFont)
-				checkBoxAsianFont->winEnable(FALSE);
-			if (checkBoxNonAsianFont)
-				checkBoxNonAsianFont->winEnable(FALSE);
-		}
-	}
-
 	//TheWindowManager->winSetModal(parent);
 } // GameSpyPlayerInfoOverlayInit
 

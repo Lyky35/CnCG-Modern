@@ -58,10 +58,6 @@
 #include "windowsx.h"
 #endif
 
-#ifndef _INC_VFW
-#include "vfw.h"
-#endif
-
 #if defined (_MSC_VER)
 #pragma warning (pop)
 #endif
@@ -99,12 +95,9 @@ protected:
 	void GrabAVI(void *BitmapPointer);
 	void GrabRawFrame(void *BitmapPointer);
 
-	// avi settings
-	PAVIFILE				AVIFile;  
+	// avi settings (legacy vfw32 removed - AVI mode is now a no-op stub)
 	long					*Bitmap;
-	PAVISTREAM			Stream;     
-	AVISTREAMINFO		AVIStreamInfo;
-	BITMAPINFOHEADER	BitmapInfoHeader; 
+	BITMAPINFOHEADER	BitmapInfoHeader;
 
 	// general purpose cleanup routine
 	void CleanupAVI();

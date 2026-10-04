@@ -33,6 +33,7 @@
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #define WIN32_LEAN_AND_MEAN  // only bare bones windows stuff wanted
 #include <windows.h>
+#include <shellscalingapi.h>
 #include <stdlib.h>
 #include <crtdbg.h>
 #include <eh.h>
@@ -42,14 +43,12 @@
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "WinMain.h"
 #include "Lib/BaseType.h"
-#include "Common/CopyProtection.h"
 #include "Common/CriticalSection.h"
 #include "Common/GlobalData.h"
 #include "Common/GameEngine.h"
 #include "Common/GameSounds.h"
 #include "Common/Debug.h"
 #include "Common/GameMemory.h"
-#include "Common/SafeDisc/CdaPfn.h"
 #include "Common/StackDump.h"
 #include "Common/MessageStream.h"
 #include "Common/Team.h"
@@ -316,11 +315,6 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message,
 			}
 		}
 		
-#ifdef DO_COPY_PROTECTION
-		// Check for messages from the launcher
-		CopyProtect::checkForMessage(message, lParam);
-#endif
-
 #ifdef	DEBUG_WINDOWS_MESSAGES
 		static msgCount=0;
 		char testString[256];
@@ -406,9 +400,52 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message,
 			//-------------------------------------------------------------------------
 			case WM_SIZE:
 				// When W3D initializes, it resizes the window.  So stop repainting.
-				if (!gInitializing) 
+				if (!gInitializing)
 					gDoPaint = false;
+				if (TheGameEngine)
+					TheGameEngine->handleWindowResize();
 				break;
+
+			//-------------------------------------------------------------------------
+			case WM_MOVE:
+				if (TheGameEngine)
+					TheGameEngine->handleWindowMove();
+				break;
+
+			//-------------------------------------------------------------------------
+			case WM_DISPLAYCHANGE:
+				if (TheGameEngine)
+					TheGameEngine->handleDisplayChange();
+				break;
+
+			//-------------------------------------------------------------------------
+			case WM_DPICHANGED:
+			{
+				if (TheGameEngine)
+				{
+					RECT* suggestedRect = (RECT*)lParam;
+					if (suggestedRect)
+					{
+						SetWindowPos(hWnd, NULL, suggestedRect->left, suggestedRect->top,
+							suggestedRect->right - suggestedRect->left,
+							suggestedRect->bottom - suggestedRect->top,
+							SWP_NOZORDER | SWP_NOACTIVATE);
+					}
+				}
+				return 0;
+			}
+
+			//-------------------------------------------------------------------------
+			case WM_SYSKEYDOWN:
+			{
+				if (wParam == VK_RETURN && (GetAsyncKeyState(VK_MENU) & 0x8000))
+				{
+					if (TheGameEngine)
+						TheGameEngine->toggleFullscreen();
+					return 0;
+				}
+				break;
+			}
 
 			//-------------------------------------------------------------------------
 			case WM_KILLFOCUS:
@@ -852,6 +889,7 @@ static CriticalSection critSec1, critSec2, critSec3, critSec4, critSec5;
 Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
                       LPSTR lpCmdLine, Int nCmdShow )
 {
+	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 	checkProtection();
 
 	try {
@@ -963,19 +1001,6 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			AsciiString(VERSION_BUILDUSER), AsciiString(VERSION_BUILDLOC),
 			AsciiString(__TIME__), AsciiString(__DATE__));
 
-#ifdef DO_COPY_PROTECTION
-		if (!CopyProtect::isLauncherRunning())
-		{
-			DEBUG_LOG(("Launcher is not running - about to bail\n"));
-			delete TheVersion;
-			TheVersion = NULL;
-			shutdownMemoryManager();
-			DEBUG_SHUTDOWN();
-			return 0;
-		}
-#endif
-
-
 		//Create a mutex with a unique name to Generals in order to determine if
 		//our app is already running.
 		//WARNING: DO NOT use this number for any other application except Generals.
@@ -1003,27 +1028,10 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		}
 		DEBUG_LOG(("Create GeneralsMutex okay.\n"));
 
-#ifdef DO_COPY_PROTECTION
-		if (!CopyProtect::notifyLauncher())
-		{
-			DEBUG_LOG(("Could not talk to the launcher - about to bail\n"));
-			delete TheVersion;
-			TheVersion = NULL;
-			shutdownMemoryManager();
-			DEBUG_SHUTDOWN();
-			return 0;
-		}
-#endif
-
 		DEBUG_LOG(("CRC message is %d\n", GameMessage::MSG_LOGIC_CRC));
 
 		// run the game main loop
 		GameMain(argc, argv);
-
-#ifdef DO_COPY_PROTECTION
-		// Clean up copy protection
-		CopyProtect::shutdown();
-#endif
 
 		delete TheVersion;
 		TheVersion = NULL;

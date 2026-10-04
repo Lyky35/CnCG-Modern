@@ -1,0 +1,49 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "windows-x64-msvc",
+            "displayName": "Windows x64 (MSVC)",
+            "generator": "Visual Studio 17 2022",
+            "architecture": "x64",
+            "binaryDir": "${sourceDir}/build/windows-x64-msvc",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "windows-x64-msvc-debug",
+            "displayName": "Windows x64 (MSVC) Debug",
+            "generator": "Visual Studio 17 2022",
+            "architecture": "x64",
+            "binaryDir": "${sourceDir}/build/windows-x64-msvc-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "windows-x64-mingw",
+            "displayName": "Windows x64 (MinGW-w64)",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/windows-x64-mingw",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/mingw-w64-x86_64.cmake"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "windows-x64-msvc",
+            "configurePreset": "windows-x64-msvc"
+        },
+        {
+            "name": "windows-x64-msvc-debug",
+            "configurePreset": "windows-x64-msvc-debug"
+        },
+        {
+            "name": "windows-x64-mingw",
+            "configurePreset": "windows-x64-mingw"
+        }
+    ]
+}

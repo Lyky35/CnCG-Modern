@@ -28,6 +28,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <shellscalingapi.h>
 #include "Common/OSDisplay.h"
 
 #include "Common/SubsystemInterface.h"
@@ -123,7 +124,94 @@ OSDisplayButtonType OSDisplayWarningBox(AsciiString p, AsciiString m, UnsignedIn
 
 	if (returnResult == IDOK) {
 		return OSDBT_OK;
-	} 
+	}
 
 	return OSDBT_CANCEL;
+}
+
+//-------------------------------------------------------------------------------------------------
+static UINT GetWindowDpi(HWND hWnd)
+{
+	UINT dpi = 96;
+	if (hWnd)
+	{
+		typedef UINT(WINAPI *GetDpiForWindow_t)(HWND);
+		GetDpiForWindow_t pGetDpiForWindow = (GetDpiForWindow_t)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "GetDpiForWindow");
+		if (pGetDpiForWindow)
+		{
+			dpi = pGetDpiForWindow(hWnd);
+		}
+		else
+		{
+			HDC hdc = GetDC(hWnd);
+			if (hdc)
+			{
+				dpi = GetDeviceCaps(hdc, LOGPIXELSX);
+				ReleaseDC(hWnd, hdc);
+			}
+		}
+	}
+	return dpi;
+}
+
+//-------------------------------------------------------------------------------------------------
+static void ScaleRectForDpi(RECT* rect, UINT dpi)
+{
+	if (!rect || dpi == 0 || dpi == 96)
+		return;
+
+	rect->left = MulDiv(rect->left, dpi, 96);
+	rect->top = MulDiv(rect->top, dpi, 96);
+	rect->right = MulDiv(rect->right, dpi, 96);
+	rect->bottom = MulDiv(rect->bottom, dpi, 96);
+}
+
+//-------------------------------------------------------------------------------------------------
+static void UnscaleRectForDpi(RECT* rect, UINT dpi)
+{
+	if (!rect || dpi == 0 || dpi == 96)
+		return;
+
+	rect->left = MulDiv(rect->left, 96, dpi);
+	rect->top = MulDiv(rect->top, 96, dpi);
+	rect->right = MulDiv(rect->right, 96, dpi);
+	rect->bottom = MulDiv(rect->bottom, 96, dpi);
+}
+
+//-------------------------------------------------------------------------------------------------
+void HandleDpiChanged(HWND hWnd, UINT newDpi, RECT* suggestedRect)
+{
+	if (!hWnd || !suggestedRect)
+		return;
+
+	SetWindowPos(hWnd, NULL, suggestedRect->left, suggestedRect->top,
+		suggestedRect->right - suggestedRect->left,
+		suggestedRect->bottom - suggestedRect->top,
+		SWP_NOZORDER | SWP_NOACTIVATE);
+}
+
+//-------------------------------------------------------------------------------------------------
+UINT GetDpiForApplicationWindow(HWND hWnd)
+{
+	return GetWindowDpi(hWnd);
+}
+
+//-------------------------------------------------------------------------------------------------
+void ScaleWindowRect(RECT* rect, HWND hWnd)
+{
+	if (!rect || !hWnd)
+		return;
+
+	UINT dpi = GetWindowDpi(hWnd);
+	ScaleRectForDpi(rect, dpi);
+}
+
+//-------------------------------------------------------------------------------------------------
+void UnscaleWindowRect(RECT* rect, HWND hWnd)
+{
+	if (!rect || !hWnd)
+		return;
+
+	UINT dpi = GetWindowDpi(hWnd);
+	UnscaleRectForDpi(rect, dpi);
 }

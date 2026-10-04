@@ -2,3 +2,5 @@
 *
 # Except this file
 !.gitignore
+# Except the Miles SDK stub header
+!mss.h

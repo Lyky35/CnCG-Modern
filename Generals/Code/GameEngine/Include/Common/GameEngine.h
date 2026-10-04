@@ -83,6 +83,11 @@ public:
 	virtual Bool isActive(void) {return m_isActive;}	///< returns whether app has OS focus.
 	virtual void setIsActive(Bool isActive) { m_isActive = isActive; };
 	virtual void checkAbnormalQuitting(void);	///< check if user is quitting at an unusual time - as in cheating!
+	virtual void toggleFullscreen( void ) {};		///< Toggle between fullscreen and windowed mode
+	virtual void setBorderlessFullscreen( Bool enable ) {};	///< Enable/disable borderless fullscreen mode
+	virtual void handleDisplayChange( void ) {};		///< Handle display resolution/monitor changes
+	virtual void handleWindowMove( void ) {};			///< Handle window move
+	virtual void handleWindowResize( void ) {};			///< Handle window resize
 
 protected:
 
@@ -96,7 +101,6 @@ protected:
 	virtual ThingFactory *createThingFactory( void ) = 0;				///< Factory for the thing factory
 	virtual FunctionLexicon *createFunctionLexicon( void ) = 0;	///< Factory for Function Lexicon
 	virtual Radar *createRadar( void ) = 0;											///< Factory for radar
-	virtual WebBrowser *createWebBrowser( void ) = 0;						///< Factory for embedded browser
 	virtual ParticleSystemManager* createParticleSystemManager( void ) = 0;
 	virtual AudioManager *createAudioManager( void ) = 0;				///< Factory for Audio Manager
 

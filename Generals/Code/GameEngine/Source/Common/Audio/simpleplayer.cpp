@@ -470,7 +470,7 @@ HRESULT CSimplePlayer::Play( LPCWSTR pszUrl, DWORD dwSecDuration, HANDLE hComple
                        WAVE_MAPPER, 
                        &m_wfx, 
                        (DWORD)WaveProc, 
-                       (DWORD)this, 
+                       (DWORD_PTR)this,
                        CALLBACK_FUNCTION );
     mmr = MMSYSERR_NOERROR;
 

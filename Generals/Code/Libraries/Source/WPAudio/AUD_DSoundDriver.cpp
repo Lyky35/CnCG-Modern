@@ -2168,21 +2168,3 @@ static int MS_decode_block (  AUD_DRV_CHAN *ci )
 
 	return TRUE;
 }
-
-
-// Stubs
-
-DXDEC  void FAR * AILCALL AIL_mem_alloc_lock(U32       size)
-{
-	return AudioMemAlloc ( size );
-}
-
-DXDEC  void       AILCALL AIL_mem_free_lock (void FAR *ptr)
-{
-	AudioMemFree ( ptr );
-}
-
-DXDEC  U32     AILCALL  AIL_MMX_available             (void)
-{
-	return 0;
-}

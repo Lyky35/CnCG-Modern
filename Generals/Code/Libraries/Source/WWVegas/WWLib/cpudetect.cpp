@@ -23,6 +23,7 @@
 #include "mpu.h"
 #pragma warning (disable : 4201)	// Nonstandard extension - nameless struct
 #include <windows.h>
+#include <intrin.h>
 #include "systimer.h"
 
 #ifdef _UNIX
@@ -135,30 +136,26 @@ static unsigned Calculate_Processor_Speed(__int64& ticks_per_second)
 	} Time;
 
 #ifdef WIN32
-   __asm {
-      ASM_RDTSC;
-      mov Time.timer0_h, eax
-      mov Time.timer0_l, edx
-   }
+   unsigned __int64 __rdtsc_val = __rdtsc();
+   Time.timer0_h = (unsigned)(__rdtsc_val & 0xFFFFFFFF);
+   Time.timer0_l = (unsigned)(__rdtsc_val >> 32);
 #elif defined(_UNIX)
-      __asm__("rdtsc");
-      __asm__("mov %eax, __Time.timer1_h");
-      __asm__("mov %edx, __Time.timer1_l");
+   unsigned __int64 __rdtsc_val = __rdtsc();
+   Time.timer1_h = (unsigned)(__rdtsc_val & 0xFFFFFFFF);
+   Time.timer1_l = (unsigned)(__rdtsc_val >> 32);
 #endif
 
 	unsigned start=TIMEGETTIME();
 	unsigned elapsed;
 	while ((elapsed=TIMEGETTIME()-start)<200) {
 #ifdef WIN32
-      __asm {
-         ASM_RDTSC;
-         mov Time.timer1_h, eax
-         mov Time.timer1_l, edx
-      }
+      unsigned __int64 __rdtsc_val2 = __rdtsc();
+      Time.timer1_h = (unsigned)(__rdtsc_val2 & 0xFFFFFFFF);
+      Time.timer1_l = (unsigned)(__rdtsc_val2 >> 32);
 #elif defined(_UNIX)
-      __asm__ ("rdtsc");
-      __asm__("mov %eax, __Time.timer1_h");
-      __asm__("mov %edx, __Time.timer1_l");
+      unsigned __int64 __rdtsc_val2 = __rdtsc();
+      Time.timer1_h = (unsigned)(__rdtsc_val2 & 0xFFFFFFFF);
+      Time.timer1_l = (unsigned)(__rdtsc_val2 >> 32);
 #endif
 	}
 
@@ -827,45 +824,18 @@ void CPUDetectClass::Init_CPUID_Instruction()
    // the command (huh?)
 
 #ifdef WIN32
-   __asm
-   {
-      mov cpuid_available, 0	// clear flag
-      push ebx
-      pushfd
-      pop eax
-      mov ebx, eax
-      xor eax, 0x00200000
-      push eax
-      popfd
-      pushfd
-      pop eax
-      xor eax, ebx
-      je done
-      mov cpuid_available, 1
-   done:
-      push ebx
-      popfd
-      pop ebx
+   // Check if CPUID is available by attempting to execute it under SEH
+   cpuid_available = 0;
+   __try {
+      int cpuInfo[4];
+      __cpuid(cpuInfo, 0);
+      cpuid_available = 1;
+   }
+   __except (EXCEPTION_EXECUTE_HANDLER) {
+      cpuid_available = 0;
    }
 #elif defined(_UNIX)
-     __asm__(" mov $0, __cpuid_available");  // clear flag
-     __asm__(" push %ebx");
-     __asm__(" pushfd");
-     __asm__(" pop %eax");
-     __asm__(" mov %eax, %ebx");
-     __asm__(" xor 0x00200000, %eax");
-     __asm__(" push %eax");
-     __asm__(" popfd");
-     __asm__(" pushfd");
-     __asm__(" pop %eax");
-     __asm__(" xor %ebx, %eax");
-     __asm__(" je done");
-     __asm__(" mov $1, __cpuid_available");
-     goto done;  // just to shut the compiler up
-   done:
-     __asm__(" push %ebx");
-     __asm__(" popfd");
-     __asm__(" pop %ebx");
+   cpuid_available = 1;  // Assume CPUID is available on modern Unix systems
 #endif
 	HasCPUIDInstruction=!!cpuid_available;
 }
@@ -917,16 +887,27 @@ void CPUDetectClass::Init_Memory()
 
 void CPUDetectClass::Init_OS()
 {
-	OSVERSIONINFO os;
 #ifdef WIN32
-   os.dwOSVersionInfoSize = sizeof(os);
-	GetVersionEx(&os);
-
-   OSVersionNumberMajor = os.dwMajorVersion;
-   OSVersionNumberMinor = os.dwMinorVersion;
-   OSVersionBuildNumber = os.dwBuildNumber;
-   OSVersionPlatformId  = os.dwPlatformId;
-   OSVersionExtraInfo   = os.szCSDVersion;
+	// Use RtlGetVersion - the only supported way to get OS version on Windows 10+
+	typedef LONG (WINAPI *RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
+	HMODULE hMod = GetModuleHandleW(L"ntdll.dll");
+	if (hMod)
+	{
+		RtlGetVersionPtr RtlGetVersion = (RtlGetVersionPtr)GetProcAddress(hMod, "RtlGetVersion");
+		if (RtlGetVersion)
+		{
+			RTL_OSVERSIONINFOW os;
+			os.dwOSVersionInfoSize = sizeof(os);
+			if (RtlGetVersion(&os) == 0)
+			{
+				OSVersionNumberMajor = os.dwMajorVersion;
+				OSVersionNumberMinor = os.dwMinorVersion;
+				OSVersionBuildNumber = os.dwBuildNumber;
+				OSVersionPlatformId  = os.dwPlatformId;
+				OSVersionExtraInfo   = os.szCSDVersion;
+			}
+		}
+	}
 #elif defined(_UNIX)
 #warning FIX Init_OS()
 #endif
@@ -947,32 +928,18 @@ bool CPUDetectClass::CPUID(
 	unsigned u_edx;
 
 #ifdef WIN32
-   __asm
-   {
-      pushad
-      mov	eax, [cpuid_type]
-      xor	ebx, ebx
-      xor	ecx, ecx
-      xor	edx, edx
-      cpuid
-      mov	[u_eax], eax
-      mov	[u_ebx], ebx
-      mov	[u_ecx], ecx
-      mov	[u_edx], edx
-      popad
-   }
+   int cpuInfo[4] = {0, 0, 0, 0};
+   __cpuid(cpuInfo, cpuid_type);
+   u_eax = (unsigned)cpuInfo[0];
+   u_ebx = (unsigned)cpuInfo[1];
+   u_ecx = (unsigned)cpuInfo[2];
+   u_edx = (unsigned)cpuInfo[3];
 #elif defined(_UNIX)
-   __asm__("pusha");
-   __asm__("mov	__cpuid_type, %eax");
-   __asm__("xor	%ebx, %ebx");
-   __asm__("xor	%ecx, %ecx");
-   __asm__("xor	%edx, %edx");
-   __asm__("cpuid");
-   __asm__("mov	%eax, __u_eax");
-   __asm__("mov	%ebx, __u_ebx");
-   __asm__("mov	%ecx, __u_ecx");
-   __asm__("mov	%edx, __u_edx");
-   __asm__("popa");
+   __asm__ __volatile__(
+      "cpuid"
+      : "=a"(u_eax), "=b"(u_ebx), "=c"(u_ecx), "=d"(u_edx)
+      : "a"(cpuid_type)
+   );
 #endif
 
 	u_eax_=u_eax;
@@ -1068,7 +1035,7 @@ void CPUDetectClass::Init_Processor_Log()
 	}
 
 	if (CPUDetectClass::Get_L1_Instruction_Trace_Cache_Size()) {
-		SYSLOG(("L1 Instruction Trace Cache: %d way set associative, %dk µOPs\r\n",
+		SYSLOG(("L1 Instruction Trace Cache: %d way set associative, %dk ï¿½OPs\r\n",
 			CPUDetectClass::Get_L1_Instruction_Cache_Set_Associative(),
 			CPUDetectClass::Get_L1_Instruction_Cache_Size()/1024));
 	}

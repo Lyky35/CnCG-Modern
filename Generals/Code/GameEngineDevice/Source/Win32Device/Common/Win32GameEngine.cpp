@@ -30,12 +30,15 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <windows.h>
+#include <shellscalingapi.h>
 #include "Win32Device/Common/Win32GameEngine.h"
 #include "Common/PerfTimer.h"
 
 #include "GameNetwork/LANAPICallbacks.h"
 
 extern DWORD TheMessageTime;
+extern HWND ApplicationHWnd;
+extern Bool ApplicationIsWindowed;
 
 //-------------------------------------------------------------------------------------------------
 /** Constructor for Win32GameEngine */
@@ -44,6 +47,12 @@ Win32GameEngine::Win32GameEngine()
 {
 	// Stop blue screen
 	m_previousErrorMode = SetErrorMode( SEM_FAILCRITICALERRORS );
+	m_borderlessFullscreen = false;
+	m_isFullscreen = false;
+	m_windowedStyle = 0;
+	m_windowedExStyle = 0;
+	m_windowedRect = {};
+	m_windowedPlacement = {};
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -122,7 +131,7 @@ void Win32GameEngine::update( void )
 /** This function may be called from within this application to let
   * Microsoft Windows do its message processing and dispatching.  Presumeably
 	* we would call this at least once each time around the game loop to keep
-	* Windows services from backing up */
+  * Windows services from backing up */
 //-------------------------------------------------------------------------------------------------
 void Win32GameEngine::serviceWindowsOS( void )
 {
@@ -156,8 +165,138 @@ void Win32GameEngine::serviceWindowsOS( void )
 		TranslateMessage( &msg );
 		DispatchMessage( &msg );
 		TheMessageTime = 0;
-			
+
 	}  // end while
 
 }  // end ServiceWindowsOS
+
+//-------------------------------------------------------------------------------------------------
+/** Toggle between fullscreen and windowed mode */
+//-------------------------------------------------------------------------------------------------
+void Win32GameEngine::toggleFullscreen( void )
+{
+	if (!ApplicationHWnd)
+		return;
+
+	if (m_isFullscreen)
+	{
+		// Restore windowed mode
+		SetWindowLong(ApplicationHWnd, GWL_STYLE, m_windowedStyle);
+		SetWindowLong(ApplicationHWnd, GWL_EXSTYLE, m_windowedExStyle);
+		SetWindowPlacement(ApplicationHWnd, &m_windowedPlacement);
+		SetWindowPos(ApplicationHWnd, HWND_NOTOPMOST, 0, 0, 0, 0,
+			SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+		m_isFullscreen = false;
+		ApplicationIsWindowed = true;
+	}
+	else
+	{
+		// Save current windowed state
+		m_windowedStyle = GetWindowLong(ApplicationHWnd, GWL_STYLE);
+		m_windowedExStyle = GetWindowLong(ApplicationHWnd, GWL_EXSTYLE);
+		m_windowedPlacement.length = sizeof(WINDOWPLACEMENT);
+		GetWindowPlacement(ApplicationHWnd, &m_windowedPlacement);
+		GetWindowRect(ApplicationHWnd, &m_windowedRect);
+
+		if (m_borderlessFullscreen)
+		{
+			// Borderless fullscreen
+			SetWindowLong(ApplicationHWnd, GWL_STYLE, WS_POPUP | WS_VISIBLE);
+			SetWindowLong(ApplicationHWnd, GWL_EXSTYLE, WS_EX_APPWINDOW);
+
+			HMONITOR hMonitor = MonitorFromWindow(ApplicationHWnd, MONITOR_DEFAULTTONEAREST);
+			MONITORINFO monitorInfo = { sizeof(MONITORINFO) };
+			if (GetMonitorInfo(hMonitor, &monitorInfo))
+			{
+				SetWindowPos(ApplicationHWnd, HWND_TOP,
+					monitorInfo.rcMonitor.left, monitorInfo.rcMonitor.top,
+					monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left,
+					monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top,
+					SWP_FRAMECHANGED | SWP_NOACTIVATE);
+			}
+		}
+		else
+		{
+			// Exclusive fullscreen
+			SetWindowLong(ApplicationHWnd, GWL_STYLE, WS_POPUP | WS_VISIBLE);
+			SetWindowLong(ApplicationHWnd, GWL_EXSTYLE, WS_EX_TOPMOST | WS_EX_APPWINDOW);
+
+			HMONITOR hMonitor = MonitorFromWindow(ApplicationHWnd, MONITOR_DEFAULTTONEAREST);
+			MONITORINFO monitorInfo = { sizeof(MONITORINFO) };
+			if (GetMonitorInfo(hMonitor, &monitorInfo))
+			{
+				SetWindowPos(ApplicationHWnd, HWND_TOPMOST,
+					monitorInfo.rcMonitor.left, monitorInfo.rcMonitor.top,
+					monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left,
+					monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top,
+					SWP_FRAMECHANGED | SWP_NOACTIVATE);
+			}
+		}
+		m_isFullscreen = true;
+		ApplicationIsWindowed = false;
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Enable/disable borderless fullscreen mode */
+//-------------------------------------------------------------------------------------------------
+void Win32GameEngine::setBorderlessFullscreen( Bool enable )
+{
+	m_borderlessFullscreen = enable;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Handle display resolution/monitor changes */
+//-------------------------------------------------------------------------------------------------
+void Win32GameEngine::handleDisplayChange( void )
+{
+	if (!ApplicationHWnd)
+		return;
+
+	// If in fullscreen, re-adjust to new monitor size
+	if (m_isFullscreen)
+	{
+		HMONITOR hMonitor = MonitorFromWindow(ApplicationHWnd, MONITOR_DEFAULTTONEAREST);
+		MONITORINFO monitorInfo = { sizeof(MONITORINFO) };
+		if (GetMonitorInfo(hMonitor, &monitorInfo))
+		{
+			SetWindowPos(ApplicationHWnd, m_borderlessFullscreen ? HWND_TOP : HWND_TOPMOST,
+				monitorInfo.rcMonitor.left, monitorInfo.rcMonitor.top,
+				monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left,
+				monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top,
+				SWP_FRAMECHANGED | SWP_NOACTIVATE);
+		}
+	}
+
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Handle window move */
+//-------------------------------------------------------------------------------------------------
+void Win32GameEngine::handleWindowMove( void )
+{
+	if (!ApplicationHWnd)
+		return;
+
+	// Update windowed rect for restoration
+	if (!m_isFullscreen)
+	{
+		GetWindowRect(ApplicationHWnd, &m_windowedRect);
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Handle window resize */
+//-------------------------------------------------------------------------------------------------
+void Win32GameEngine::handleWindowResize( void )
+{
+	if (!ApplicationHWnd)
+		return;
+
+	// Update windowed rect for restoration
+	if (!m_isFullscreen)
+	{
+		GetWindowRect(ApplicationHWnd, &m_windowedRect);
+	}
+}
 

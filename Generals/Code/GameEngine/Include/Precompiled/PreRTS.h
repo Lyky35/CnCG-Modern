@@ -75,7 +75,6 @@ class STLSpecialAlloc;
 #include <sys/types.h>
 #include <TCHAR.H>
 #include <time.h>
-#include <vfw.h>
 #include <winerror.h>
 #include <wininet.h>
 #include <winreg.h>

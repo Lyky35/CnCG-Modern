@@ -66,7 +66,7 @@
 
 #include "GameNetwork/GameSpyOverlay.h"
 
-#include "GameNetwork/WOLBrowser/WebBrowser.h"
+#include "GameNetwork/WOLBrowser/WebBrowserStub.h"
 
 #ifdef _INTERNAL
 // for occasional debugging...
@@ -721,10 +721,6 @@ void WOLLoginMenuShutdown( WindowLayout *layout, void *userData )
 	TheWindowManager->clearTabList();
 	if (webBrowserActive)
 	{
-		if (TheWebBrowser != NULL)
-		{
-			TheWebBrowser->closeBrowserWindow(listboxTOS);
-		}
 		webBrowserActive = FALSE;
 	}
 
@@ -1417,14 +1413,13 @@ WindowMsgHandledType WOLLoginMenuSystem( GameWindow *window, UnsignedInt msg,
 				} //if ( controlID == buttonLogin )
 				else if ( controlID == buttonTOSID )
 				{
-					parentTOS->winHide(FALSE);
-					useWebBrowserForTOS = FALSE;//loginPref->getBool("UseTOSBrowser", TRUE);
-					if (useWebBrowserForTOS && (TheWebBrowser != NULL))
-					{
-						TheWebBrowser->createBrowserWindow("TermsOfService", listboxTOS);
-						webBrowserActive = TRUE;
-					}
-					else
+				parentTOS->winHide(FALSE);
+				useWebBrowserForTOS = FALSE;//loginPref->getBool("UseTOSBrowser", TRUE);
+				if (useWebBrowserForTOS)
+				{
+					webBrowserActive = TRUE;
+				}
+				else
 					{
 						// Okay, no web browser.  This means we're looking at a UTF-8 text file.
 						GadgetListBoxReset(listboxTOS);
@@ -1482,14 +1477,7 @@ WindowMsgHandledType WOLLoginMenuSystem( GameWindow *window, UnsignedInt msg,
 				{
 					EnableLoginControls( TRUE );
 
-					parentTOS->winHide(TRUE);
-					if (useWebBrowserForTOS && (TheWebBrowser != NULL))
-					{
-						if (listboxTOS != NULL)
-						{
-							TheWebBrowser->closeBrowserWindow(listboxTOS);
-						}
-					}
+				parentTOS->winHide(TRUE);
 
 					OptionPreferences optionPref;
 					optionPref["SawTOS"] = "yes";

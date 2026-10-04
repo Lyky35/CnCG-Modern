@@ -123,10 +123,22 @@ WindowsVersionInfo::WindowsVersionInfo(void) :
 	//		BYTE	wReserved;
 	//	} OSVERSIONINFOEX, *POSVERSIONINFOEX, *LPOSVERSIONINFOEX;
 	//--------------------------------------------------------------------------
-	ZeroMemory( &version_info, sizeof( version_info ));	
+	// Use RtlGetVersion - the only supported way to get OS version on Windows 10+
+	typedef LONG (WINAPI *RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
+	HMODULE hMod = GetModuleHandleW(L"ntdll.dll");
+	RTL_OSVERSIONINFOW version_info;
+	ZeroMemory( &version_info, sizeof( version_info ));
 	version_info.dwOSVersionInfoSize = sizeof( version_info );
 
-	int result = GetVersionEx( &version_info );
+	int result = 0;
+	if (hMod)
+	{
+		RtlGetVersionPtr RtlGetVersion = (RtlGetVersionPtr)GetProcAddress(hMod, "RtlGetVersion");
+		if (RtlGetVersion)
+		{
+			result = (RtlGetVersion(&version_info) == 0) ? 1 : 0;
+		}
+	}
 	assert( result != 0 );
 
 	//--------------------------------------------------------------------------

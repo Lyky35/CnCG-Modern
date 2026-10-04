@@ -91,7 +91,6 @@ static void drawFramerateBar(void);
 #include "WW3D2/Render2DSentence.h"
 #include "WW3D2/SortingRenderer.h"
 #include "WW3D2/Textureloader.h"
-#include "WW3D2/DX8WebBrowser.h"
 #include "WW3D2/Mesh.h"
 #include "WW3D2/HLOD.h"
 #include "WW3D2/Meshmatdesc.h"
@@ -413,7 +412,6 @@ W3DDisplay::~W3DDisplay()
 	delete m_assetManager;
 	WW3D::Shutdown();
 	WWMath::Shutdown();
-	DX8WebBrowser::Shutdown();
 	delete TheW3DFileSystem;
 	TheW3DFileSystem = NULL;
 
@@ -488,19 +486,9 @@ void Reset_D3D_Device(bool active)
 	if (TheDisplay && WW3D::Is_Initted() && !TheDisplay->getWindowed())
 	{
 		if (active)
-		{	
+		{
 			//switch back to desired mode when user alt-tabs back into game
 			WW3D::Set_Render_Device( WW3D::Get_Render_Device(),TheDisplay->getWidth(),TheDisplay->getHeight(),TheDisplay->getBitDepth(),TheDisplay->getWindowed(),true, true);
-			OSVERSIONINFO	osvi;
-			osvi.dwOSVersionInfoSize=sizeof(OSVERSIONINFO);
-			if (GetVersionEx(&osvi))
-			{	//check if we're running Win9x variant since they have buggy alt-tab that requires
-				//reloading all textures.
-				if (osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
-				{	//only do this on Win9x boxes because it makes alt-tab very slow.
-						WW3D::_Invalidate_Textures();
-				}
-			}
 		}
 		else
 		{
@@ -757,8 +745,6 @@ void W3DDisplay::init( void )
 		m_nativeDebugDisplay->setFontHeight( 13 );
 		m_nativeDebugDisplay->setFontWidth( 9 );
 	}
-
-	DX8WebBrowser::Initialize();
 
 	// we're now online
 	m_initialized = true;

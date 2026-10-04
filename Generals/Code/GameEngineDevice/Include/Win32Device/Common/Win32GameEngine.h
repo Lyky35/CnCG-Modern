@@ -38,13 +38,12 @@
 #include "Common/GameEngine.h"
 #include "GameLogic/GameLogic.h"
 #include "GameNetwork/NetworkInterface.h"
-#include "MilesAudioDevice/MilesAudioManager.h"
+#include "XAudio2Engine.h"
 #include "Win32Device/Common/Win32BIGFileSystem.h"
 #include "Win32Device/Common/Win32LocalFileSystem.h"
 #include "W3DDevice/Common/W3DModuleFactory.h"
 #include "W3DDevice/GameLogic/W3DGameLogic.h"
 #include "W3DDevice/GameClient/W3DGameClient.h"
-#include "W3DDevice/GameClient/W3DWebBrowser.h"
 #include "W3DDevice/Common/W3DFunctionLexicon.h"
 #include "W3DDevice/Common/W3DRadar.h"
 #include "W3DDevice/Common/W3DFunctionLexicon.h"
@@ -73,20 +72,30 @@ protected:
 
 	virtual GameLogic *createGameLogic( void );							///< factory for game logic
  	virtual GameClient *createGameClient( void );						///< factory for game client
-	virtual ModuleFactory *createModuleFactory( void );			///< factory for creating modules
-	virtual ThingFactory *createThingFactory( void );				///< factory for the thing factory
-	virtual FunctionLexicon *createFunctionLexicon( void ); ///< factory for function lexicon
-	virtual LocalFileSystem *createLocalFileSystem( void ); ///< factory for local file system
-	virtual ArchiveFileSystem *createArchiveFileSystem( void );	///< factory for archive file system
-	virtual NetworkInterface *createNetwork( void );				///< Factory for the network
-	virtual Radar *createRadar( void );											///< Factory for radar
-	virtual WebBrowser *createWebBrowser( void );						///< Factory for embedded browser
-	virtual AudioManager *createAudioManager( void );				///< Factory for audio device
-	virtual ParticleSystemManager* createParticleSystemManager( void );
+ 	virtual ModuleFactory *createModuleFactory( void );			///< factory for creating modules
+ 	virtual ThingFactory *createThingFactory( void );				///< factory for the thing factory
+ 	virtual FunctionLexicon *createFunctionLexicon( void ); ///< factory for function lexicon
+ 	virtual LocalFileSystem *createLocalFileSystem( void ); ///< factory for local file system
+ 	virtual ArchiveFileSystem *createArchiveFileSystem( void );	///< factory for archive file system
+ 	virtual NetworkInterface *createNetwork( void );				///< Factory for the network
+ 	virtual Radar *createRadar( void );											///< Factory for radar
+ 	virtual AudioManager *createAudioManager( void );				///< Factory for audio device
+ 	virtual ParticleSystemManager* createParticleSystemManager( void );
 
+	void toggleFullscreen( void );											///< Toggle between fullscreen and windowed mode
+	void setBorderlessFullscreen( Bool enable );					///< Enable/disable borderless fullscreen mode
+	void handleDisplayChange( void );										///< Handle display resolution/monitor changes
+	void handleWindowMove( void );											///< Handle window move
+	void handleWindowResize( void );										///< Handle window resize
 
 protected:
 	UINT m_previousErrorMode;
+	Bool m_borderlessFullscreen;
+	Bool m_isFullscreen;
+	DWORD m_windowedStyle;
+	DWORD m_windowedExStyle;
+	RECT m_windowedRect;
+	WINDOWPLACEMENT m_windowedPlacement;
 };  // end Win32GameEngine
 
 // INLINE -----------------------------------------------------------------------------------------
@@ -101,7 +110,6 @@ inline ParticleSystemManager* Win32GameEngine::createParticleSystemManager( void
 
 inline NetworkInterface *Win32GameEngine::createNetwork( void ) { return NetworkInterface::createNetwork(); }
 inline Radar *Win32GameEngine::createRadar( void ) { return NEW W3DRadar; }
-inline WebBrowser *Win32GameEngine::createWebBrowser( void ) { return NEW CComObject<W3DWebBrowser>; }
-inline AudioManager *Win32GameEngine::createAudioManager( void ) { return NEW MilesAudioManager; }
+ inline AudioManager *Win32GameEngine::createAudioManager( void ) { return NEW XAudio2Engine; }
  
 #endif  // end __WIN32GAMEENGINE_H_

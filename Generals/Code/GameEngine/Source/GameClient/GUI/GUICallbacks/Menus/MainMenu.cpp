@@ -318,16 +318,7 @@ static void doGameStart( void )
 
 static void checkCDBeforeCampaign(GameDifficulty diff)
 {
-	if (!IsFirstCDPresent())
-	{
-		// popup a dialog asking for a CD
-		ExMessageBoxOkCancel(TheGameText->fetch("GUI:InsertCDPrompt"), TheGameText->fetch("GUI:InsertCDMessage"),
-			(void *)diff, checkCDCallback, cancelStartBecauseOfNoCD);
-	}
-	else
-	{
-		prepareCampaignGame(diff);
-	}
+	prepareCampaignGame(diff);
 }
 
 static void shutdownComplete( WindowLayout *layout )

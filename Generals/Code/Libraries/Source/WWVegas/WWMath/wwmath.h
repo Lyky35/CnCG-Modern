@@ -290,80 +290,33 @@ WWINLINE bool WWMath::Is_Valid_Double(double x)
 // Float to long
 // ----------------------------------------------------------------------------
 
-#if defined(_MSC_VER) && defined(_M_IX86)
 WWINLINE long WWMath::Float_To_Long(float f)
 {
-	long i;
-
-	__asm {
-		fld [f]
-		fistp [i]
-	}
-
-	return i;
+	return static_cast<long>(f);
 }
-#else 
-WWINLINE long WWMath::Float_To_Long(float f)
-{
-	return (long) f;
-}
-#endif
 
-WWINLINE long WWMath::Float_To_Long(double f)	
+WWINLINE long WWMath::Float_To_Long(double f)
 {
-#if defined(_MSC_VER) && defined(_M_IX86)
-	long retval;
-	__asm fld	qword ptr [f]
-	__asm fistp dword ptr [retval]
-	return retval;
-#else 
-	return (long) f;
-#endif
+	return static_cast<long>(f);
 }
 
 // ----------------------------------------------------------------------------
 // Cos
 // ----------------------------------------------------------------------------
 
-#if defined(_MSC_VER) && defined(_M_IX86)
-WWINLINE float WWMath::Cos(float val)
-{
-	float retval;
-	__asm {
-		fld [val]
-		fcos
-		fstp [retval]
-	}
-	return retval;
-}
-#else
 WWINLINE float WWMath::Cos(float val)
 {
 	return cosf(val);
 }
-#endif
 
 // ----------------------------------------------------------------------------
 // Sin
 // ----------------------------------------------------------------------------
 
-#if defined(_MSC_VER) && defined(_M_IX86)
-WWINLINE float WWMath::Sin(float val)
-{
-	float retval;
-	__asm {
-		fld [val]
-		fsin
-		fstp [retval]
-	}
-	return retval;
-}
-#else
 WWINLINE float WWMath::Sin(float val)
 {
 	return sinf(val);
 }
-#endif
 
 // ----------------------------------------------------------------------------
 // Fast, table based sin
@@ -537,23 +490,10 @@ WWINLINE float WWMath::Asin(float val)
 // Sqrt
 // ----------------------------------------------------------------------------
 
-#if defined(_MSC_VER) && defined(_M_IX86)
 WWINLINE float WWMath::Sqrt(float val)
 {
-	float retval;
-	__asm {
-		fld [val]
-		fsqrt
-		fstp [retval]
-	}
-	return retval;
+	return sqrtf(val);
 }
-#else
-WWINLINE float WWMath::Sqrt(float val)
-{
-	return (float)sqrt(val);
-}
-#endif
 
 WWINLINE int WWMath::Float_To_Int_Chop(const float& f)
 {
@@ -585,58 +525,10 @@ WWINLINE int WWMath::Float_To_Int_Floor (const float& f)
 // Inverse square root
 // ----------------------------------------------------------------------------
 
-#if defined(_MSC_VER) && defined(_M_IX86)
-WWINLINE __declspec(naked) float __fastcall WWMath::Inv_Sqrt(float a)
-{
-	__asm {
-		mov		eax, 0be6eb508h
-		mov		DWORD PTR [esp-12],03fc00000h ;  1.5 on the stack
-		sub		eax, DWORD PTR [esp+4]; a
-		sub		DWORD PTR [esp+4], 800000h ; a/2 a=Y0
-		shr		eax, 1     ; firs approx in eax=R0
-		mov		DWORD PTR [esp-8], eax
-
-		fld		DWORD PTR [esp-8] ;r
-		fmul	st, st            ;r*r
-		fld		DWORD PTR [esp-8] ;r
-		fxch	st(1)
-		fmul	DWORD PTR [esp+4];a ;r*r*y0
-		fld		DWORD PTR [esp-12];load 1.5
-		fld		st(0)
-		fsub	st,st(2)			   ;r1 = 1.5 - y1
-		;x1 = st(3)
-		;y1 = st(2)
-		;1.5 = st(1)
-		;r1 = st(0)
-
-		fld		st(1)
-		fxch	st(1)
-		fmul	st(3),st			; y2=y1*r1*...
-		fmul	st(3),st			; y2=y1*r1*r1
-		fmulp	st(4),st            ; x2=x1*r1
-		fsub	st,st(2)               ; r2=1.5-y2
-		;x2=st(3)
-		;y2=st(2)
-		;1.5=st(1)
-		;r2 = st(0)
-
-		fmul	st(2),st			;y3=y2*r2*...
-		fmul	st(3),st			;x3=x2*r2
-		fmulp	st(2),st			;y3=y2*r2*r2
-		fxch	st(1)
-		fsubp	st(1),st			;r3= 1.5 - y3
-		;x3 = st(1)
-		;r3 = st(0)
-		fmulp	st(1), st
-		ret 4
-	}
-}
-#else
 WWINLINE float WWMath::Inv_Sqrt(float val)
 {
-	return 1.0f / (float)sqrt(val);
+	return 1.0f / sqrtf(val);
 }
-#endif
 
 
 #endif

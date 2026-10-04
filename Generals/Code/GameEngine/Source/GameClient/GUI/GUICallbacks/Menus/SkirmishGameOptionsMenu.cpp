@@ -411,11 +411,7 @@ static MessageBoxReturnType cancelStartBecauseOfNoCD( void *userData )
 
 Bool IsFirstCDPresent(void)
 {
-#if !defined(_INTERNAL) && !defined(_DEBUG)
-	return TheFileSystem->areMusicFilesOnCD();
-#else
 	return TRUE;
-#endif
 }
 
 static MessageBoxReturnType checkCDCallback( void *userData )
@@ -435,16 +431,8 @@ static MessageBoxReturnType checkCDCallback( void *userData )
 
 void CheckForCDAtGameStart( gameStartCallback callback )
 {
-	if (!IsFirstCDPresent())
-	{
-		// popup a dialog asking for a CD
-		ExMessageBoxOkCancel(TheGameText->fetch("GUI:InsertCDPrompt"), TheGameText->fetch("GUI:InsertCDMessage"),
-			callback, checkCDCallback, cancelStartBecauseOfNoCD);
-	}
-	else
-	{
+	if (callback)
 		callback();
-	}
 }
 
 Bool sandboxOk = FALSE;
