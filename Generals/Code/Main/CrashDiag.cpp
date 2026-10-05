@@ -100,18 +100,25 @@ static LONG WINAPI CrashDiagHandler(PEXCEPTION_POINTERS ep)
 		(unsigned long long)c->R8, (unsigned long long)c->R9,
 		(unsigned long long)c->R10, (unsigned long long)c->R11);
 
-	// Proper unwind via ntdll RtlVirtualUnwind (works across system modules).
-	typedef PVOID (WINAPI *RtlWalkFrameChain_t)(PVOID*, ULONG, ULONG);
-	RtlWalkFrameChain_t walk = (RtlWalkFrameChain_t)
-		GetProcAddress(GetModuleHandleA("ntdll.dll"), "RtlWalkFrameChain");
+	// Proper unwind via ntdll's table-based unwinder.
+	typedef PRUNTIME_FUNCTION (WINAPI *LookupFn)(ULONG64, PULONG64, PVOID);
+	typedef VOID (WINAPI *UnwindFn)(ULONG, ULONG64, ULONG64, PRUNTIME_FUNCTION,
+	                                PCONTEXT, PULONG64, PVOID, PVOID);
+	HMODULE ntdll = GetModuleHandleA("ntdll.dll");
+	LookupFn lookup = (LookupFn)GetProcAddress(ntdll, "RtlLookupFunctionEntry");
+	UnwindFn unwind = (UnwindFn)GetProcAddress(ntdll, "RtlVirtualUnwind");
 	BOOL unwound = FALSE;
-	if (walk) {
-		PVOID chain[64];
-		// Flags bit1 = "call frames" from current context (works in exception context)
-		ULONG n = walk(chain, 64, 1);
-		if (n > 0) {
+	if (lookup && unwind) {
+		CONTEXT cur = *c;
+		for (int i = 0; i < 40; ++i) {
+			ULONG64 ib = 0;
+			PRUNTIME_FUNCTION rf = lookup(cur.Rip, &ib, NULL);
+			if (!rf) break;
+			ULONG64 est = 0;
+			unwind(0, ib, cur.Rip, rf, &cur, &est, NULL, NULL);
+			if (!cur.Rip) break;
 			unwound = TRUE;
-			for (ULONG i = 0; i < n; ++i) LogFrame(f, "  frame", (ULONG64)chain[i]);
+			LogFrame(f, "  frame", cur.Rip);
 		}
 	}
 	if (!unwound) {
