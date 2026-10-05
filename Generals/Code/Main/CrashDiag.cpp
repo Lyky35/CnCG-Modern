@@ -7,6 +7,8 @@
 #include <windows.h>
 #include <tlhelp32.h>
 #include <stdio.h>
+#include <exception>
+#include <typeinfo>
 #include <stdlib.h>
 
 static ULONG64 g_imageBase = 0;
@@ -173,5 +175,22 @@ void CrashDiagMarker(const char* msg)
 	FILE* f = OpenLog();
 	if (!f) return;
 	fprintf(f, "marker: %s\n", msg);
+	fclose(f);
+}
+
+void CrashDiagReportException(const char* where)
+{
+	FILE* f = OpenLog();
+	if (!f) return;
+	fprintf(f, "exception escaped at: %s\n", where);
+	try {
+		throw;
+	} catch (const std::exception& e) {
+		fprintf(f, "  std::exception: %s\n", e.what());
+	} catch (const char* s) {
+		fprintf(f, "  char*: %s\n", s ? s : "(null)");
+	} catch (...) {
+		fprintf(f, "  unknown exception type\n");
+	}
 	fclose(f);
 }

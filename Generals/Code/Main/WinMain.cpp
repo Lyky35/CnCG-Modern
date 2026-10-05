@@ -1001,6 +1001,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		CrashDiagMarker("before app windows");
 		if( initializeAppWindows( hInstance, nCmdShow, ApplicationIsWindowed) == false )
 			return 0;
+		CrashDiagMarker("after app windows");
 
 		if (gLoadScreenBitmap!=NULL) {
 			::DeleteObject(gLoadScreenBitmap);
@@ -1012,8 +1013,11 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	//	OleInitialize(NULL);
 
 		// start the log
+		CrashDiagMarker("before debug init");
 		DEBUG_INIT(DEBUG_FLAGS_DEFAULT);
+		CrashDiagMarker("before memmgr init");
 		initMemoryManager();
+		CrashDiagMarker("after memmgr init");
 
  
 		// Set up version info
@@ -1028,6 +1032,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		GeneralsMutex = CreateMutex(NULL, FALSE, GENERALS_GUID);
 		if (GetLastError() == ERROR_ALREADY_EXISTS)
 		{
+			CrashDiagMarker("bail: mutex already exists - another instance?");
 			HWND ccwindow = FindWindow(GENERALS_GUID, NULL);
 			if (ccwindow)
 			{
@@ -1052,7 +1057,9 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		DEBUG_LOG(("CRC message is %d\n", GameMessage::MSG_LOGIC_CRC));
 
 		// run the game main loop
+		CrashDiagMarker("before GameMain");
 		GameMain(argc, argv);
+		CrashDiagMarker("after GameMain");
 
 		delete TheVersion;
 		TheVersion = NULL;
@@ -1071,9 +1078,10 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		// BGC - shut down COM
 	//	OleUninitialize();
 	}	
-	catch (...) 
-	{ 
-	
+	catch (...)
+	{
+		extern void CrashDiagReportException(const char* where);
+		CrashDiagReportException("WinMain");
 	}
 
 	TheAsciiStringCriticalSection = NULL;
