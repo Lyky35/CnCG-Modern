@@ -5,4 +5,7 @@ list(APPEND GAMEENGINE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/Source/Common/System
 
 add_library(GameEngine STATIC ${GAMEENGINE_SOURCES})
 
-target_include_directories(GameEngine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Include")
+target_include_directories(GameEngine PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/Include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Include/Precompiled"
+)

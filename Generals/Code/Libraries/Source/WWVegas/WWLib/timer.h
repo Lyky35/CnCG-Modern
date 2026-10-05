@@ -204,32 +204,33 @@ inline int BasicTimerClass<T>::operator () (void) const
 template<class T>
 class TTimerClass : public BasicTimerClass<T> {
  	public:
-		// Constructor allows assignment as if class was integral 'long' type.
-		TTimerClass(int set=0);
-		TTimerClass(NoInitClass const & x);
+ 		// Constructor allows assignment as if class was integral 'long' type.
+ 		TTimerClass(int set=0);
+ 		TTimerClass(NoInitClass const & x);
 
-		~TTimerClass(void) {};
+ 		~TTimerClass(void) {};
 
-		// Fetches current value of timer.
-		int Value(void) const;
+ 		// Fetches current value of timer.
+ 		int Value(void) const;
 
-		// Conversion operator to allow consistent treatment with integral types.
-		operator int(void) const;
+ 		// Conversion operator to allow consistent treatment with integral types.
+ 		operator int(void) const;
 
-		// Function operator to allow timer object definition to be cascaded.
-		int operator () (void) const;
+ 		// Function operator to allow timer object definition to be cascaded.
+ 		int operator () (void) const;
 
-		// Stops (pauses) the timer.
-		void Stop(void);
+ 		// Stops (pauses) the timer.
+ 		void Stop(void);
 
-		// Starts (resumes) the timer.
-		void Start(void);
+ 		// Starts (resumes) the timer.
+ 		void Start(void);
 
-		// Queries whether the timer is currently active.
-		bool Is_Active(void) const;
+ 		// Queries whether the timer is currently active.
+ 		bool Is_Active(void) const;
 
-	private:
-		int Accumulated;				//	Total accumulated ticks.
+ 	private:
+ 		int Accumulated;				//	Total accumulated ticks.
+ 		int Started;					// Timer start value (-1 = stopped)
 };
 
 
@@ -455,6 +456,7 @@ class CDTimerClass : public BasicTimerClass<T> {
 
 	private:
 		int DelayTime;			// Ticks remaining before countdown timer expires.
+		int Started;			// Timer start value (-1 = stopped)
 };
 
 

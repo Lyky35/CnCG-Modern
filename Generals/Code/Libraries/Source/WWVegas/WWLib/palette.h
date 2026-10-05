@@ -1,0 +1,1 @@
+../../../Tools/WW3D/pluglib/palette.h
