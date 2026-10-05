@@ -91,6 +91,22 @@ static LONG WINAPI CrashDiagHandler(PEXCEPTION_POINTERS ep)
 		rbp = nextRbp;
 	}
 
+	// Fallback: scrape the raw stack for anything that looks like a return
+	// address inside RTS.exe -- works even without frame pointers.
+	fprintf(f, "  stack scrape (RTS.exe code addresses only):\n");
+	ULONG64 sp = c->Rsp;
+	ULONG64 prev = 0;
+	int printed = 0;
+	for (ULONG64 a = sp; a < sp + 0x4000 && printed < 48; a += 8) {
+		if (!IsReadable(a, 8)) break;
+		ULONG64 v = *(ULONG64*)a;
+		if (v > g_imageBase + 0x1000 && v < g_imageBase + g_imageSize && v != prev) {
+			LogFrame(f, "    *", v);
+			prev = v;
+			++printed;
+		}
+	}
+
 	fflush(f);
 	fclose(f);
 	return EXCEPTION_EXECUTE_HANDLER;
