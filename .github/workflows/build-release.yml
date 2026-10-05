@@ -37,9 +37,11 @@ jobs:
       run: |
         mkdir -p dist
         cp build/windows-x64-mingw/bin/RTS.exe dist/
-        cp /usr/x86_64-w64-mingw32/bin/libgcc_s_seh-1.dll dist/
-        cp /usr/x86_64-w64-mingw32/bin/libstdc++-6.dll dist/
-        cp /usr/x86_64-w64-mingw32/bin/libwinpthread-1.dll dist/
+        for dll in libgcc_s_seh-1.dll libstdc++-6.dll libwinpthread-1.dll; do
+          src=$(find /usr -name "$dll" -path "*x86_64*" 2>/dev/null | head -1)
+          if [ -z "$src" ]; then echo "missing $dll" >&2; exit 1; fi
+          cp "$src" dist/
+        done
         cp README.txt dist/ 2>/dev/null || true
         (cd dist && zip -qr ../RTS-vulkan-win64.zip .)
 
