@@ -36,7 +36,7 @@ endif()
 if(MSVC)
     add_compile_options(/W3 /permissive- /Zc:__cplusplus /Zc:externConstexpr /Zc:throwingNew)
 else()
-    add_compile_options(-Wall -Wextra -fpermissive)
+    add_compile_options(-Wall -Wextra -fpermissive -Wno-narrowing)
 endif()
 
 set(GAME_CODE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Generals/Code)
