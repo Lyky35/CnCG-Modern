@@ -44,6 +44,12 @@
 #define DX8_WRAPPER_H
 
 #include "always.h"
+
+// Older MinGW-w64 headers omit D3DPRESENT_RATE_DEFAULT (D3D8 presentation rate is
+// implied by the interval).
+#ifndef D3DPRESENT_RATE_DEFAULT
+#define D3DPRESENT_RATE_DEFAULT 0x00000001
+#endif
 #include "dllist.h"
 #include "d3d8.h"
 #include "matrix4.h"
