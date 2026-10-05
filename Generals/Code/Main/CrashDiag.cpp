@@ -95,6 +95,10 @@ static LONG WINAPI CrashDiagHandler(PEXCEPTION_POINTERS ep)
 			(unsigned long long)er->ExceptionInformation[1]);
 	}
 	LogFrame(f, "RIP", c->Rip);
+	fprintf(f, "  args: rcx=0x%llx rdx=0x%llx r8=0x%llx r9=0x%llx r10=0x%llx r11=0x%llx\n",
+		(unsigned long long)c->Rcx, (unsigned long long)c->Rdx,
+		(unsigned long long)c->R8, (unsigned long long)c->R9,
+		(unsigned long long)c->R10, (unsigned long long)c->R11);
 
 	// RBP-chain walk. Heuristic: stop when the frame pointer stops ascending.
 	ULONG64 rbp = c->Rbp;
