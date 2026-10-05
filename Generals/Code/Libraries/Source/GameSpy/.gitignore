@@ -1,4 +1,6 @@
-# Ignore everything in this directory
+# Ignore the (proprietary, unavailable) GameSpy SDK sources but keep our stub layer.
 *
-# Except this file
 !.gitignore
+!CMakeLists.txt
+!Stub/
+!Stub/**
