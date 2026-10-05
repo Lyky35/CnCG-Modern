@@ -1,5 +1,6 @@
 add_executable(RTS WIN32
     "${CMAKE_CURRENT_SOURCE_DIR}/WinMain.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/CrashDiag.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/RTS.manifest"
 )
 

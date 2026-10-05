@@ -38,7 +38,10 @@ void GameMain( int argc, char *argv[] )
 {
 	// initialize the game engine using factory function
 	TheGameEngine = CreateGameEngine();
+	extern void CrashDiagMarker(const char*);
+	CrashDiagMarker("before engine init");
 	TheGameEngine->init(argc, argv);
+	CrashDiagMarker("after engine init");
 
 	// run it
 	TheGameEngine->execute();

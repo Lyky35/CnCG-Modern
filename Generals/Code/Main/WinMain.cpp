@@ -895,6 +895,8 @@ char *nextParam(char *newSource, char *seps)
 	return first;
 }
 
+extern void CrashDiagMarker(const char* msg);
+
 // Necessary to allow memory managers and such to have useful critical sections
 static CriticalSection critSec1, critSec2, critSec3, critSec4, critSec5;
 
@@ -904,6 +906,7 @@ static CriticalSection critSec1, critSec2, critSec3, critSec4, critSec5;
 Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
                       LPSTR lpCmdLine, Int nCmdShow )
 {
+	CrashDiagMarker("WinMain enter");
 	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 	checkProtection();
 
@@ -1086,6 +1089,7 @@ GameEngine *CreateGameEngine( void )
 {
 	Win32GameEngine *engine;
 
+	CrashDiagMarker("before engine alloc");
 	engine = NEW Win32GameEngine;
 	//game engine may not have existed when app got focus so make sure it
 	//knows about current focus state.
