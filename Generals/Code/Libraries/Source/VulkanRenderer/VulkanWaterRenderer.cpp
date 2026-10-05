@@ -1,8 +1,13 @@
+#include <string>
 #include "VulkanWaterRenderer.h"
 #include "VulkanShader.h"
 #include <cstring>
 #include <cmath>
 
+#ifdef VULKAN_GENERATED_SHADERS
+#include "GeneratedShaders/water_vert_spv.h"
+static const std::string WATER_VERTEX_SHADER_SRC((const char*)water_vert_spv, water_vert_spv_len);
+#else
 static const char* WATER_VERTEX_SHADER_SRC = R"(
 #version 450
 layout(location = 0) in vec3 inPosition;
@@ -19,7 +24,12 @@ void main() {
     outWorldPos = inPosition;
 }
 )";
+#endif
 
+#ifdef VULKAN_GENERATED_SHADERS
+#include "GeneratedShaders/water_frag_spv.h"
+static const std::string WATER_FRAGMENT_SHADER_SRC((const char*)water_frag_spv, water_frag_spv_len);
+#else
 static const char* WATER_FRAGMENT_SHADER_SRC = R"(
 #version 450
 layout(location = 0) in vec2 inTexCoord;
@@ -47,6 +57,7 @@ void main() {
     outColor = vec4(finalColor, 0.85);
 }
 )";
+#endif
 
 struct WaterVertex {
     float x, y, z;

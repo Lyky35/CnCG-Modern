@@ -35,7 +35,7 @@
 #include "GameNetwork/GameSpyChat.h"
 #include "Common/QuotedPrintable.h"
 
-typedef set<AsciiString>::const_iterator AsciiSetIter;
+typedef std::set<AsciiString>::const_iterator AsciiSetIter;
 
 /**
 	* handleSlashCommands looks for slash ccommands and handles them,
@@ -70,7 +70,7 @@ static Bool handleSlashCommands( UnicodeString message, Bool isAction, GameWindo
 				{
 					// List the people we're ignoring
 					TheWOL->addText(TheGameText->fetch("WOL:BeginIgnoreList"));
-					set<AsciiString> *ignoreList = getIgnoreList();
+					std::set<AsciiString> *ignoreList = getIgnoreList();
 					if (ignoreList)
 					{
 						UnicodeString msg;

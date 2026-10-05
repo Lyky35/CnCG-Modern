@@ -45,7 +45,7 @@
 #include "GameLogic/GameLogic.h"
 #include "GameNetwork/FileTransfer.h"
 #include "GameNetwork/LANAPICallbacks.h"
-#include "GameNetwork/NetworkUtil.h"
+#include "GameNetwork/networkutil.h"
 
 LANAPI *TheLAN = NULL;
 extern Bool LANbuttonPushed;
@@ -105,7 +105,7 @@ void LANAPI::OnAccept( UnsignedInt playerIP, Bool status )
 	if( AmIHost() )
 	{
 		
-		for (Int i = 0; i < MAX_SLOTS; i++)
+		Int i = 0; for (; i < MAX_SLOTS; i++)
 		{
 			if (m_currentGame->getIP(i) == playerIP)
 			{
@@ -139,7 +139,7 @@ void LANAPI::OnHasMap( UnsignedInt playerIP, Bool status )
 	if( AmIHost() )
 	{
 		
-		for (Int i = 0; i < MAX_SLOTS; i++)
+		Int i = 0; for (; i < MAX_SLOTS; i++)
 		{
 			if (m_currentGame->getIP(i) == playerIP)
 			{

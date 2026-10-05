@@ -64,13 +64,14 @@ class STLSpecialAlloc;
 
 // FORWARD DECLARATIONS
 class Object;
-enum NameKeyType;
-enum ObjectID;
-enum DrawableID;
+enum NameKeyType : int;
+enum ObjectID : int;
+enum DrawableID : int;
 
 #include <algorithm>
 #include <bitset>
-#include <hash_map>
+#include <unordered_map>
+#include <functional>
 #include <list>
 #include <map>
 #include <queue>
@@ -190,10 +191,15 @@ namespace rts
 
 	template<> struct hash<AsciiString>
 	{
-		size_t operator()(AsciiString ast) const
-		{ 
-			std::hash<const char *> tmp;
-			return tmp((const char *) ast.str());
+		size_t operator()(const AsciiString& ast) const
+		{
+			// djb2 over the string bytes (std::hash<const char*> is not portable)
+			const unsigned char *p = (const unsigned char *) ast.str();
+			size_t h = 5381;
+			if (p) {
+				while (*p) { h = ((h << 5) + h) + *p; ++p; }
+			}
+			return h;
 		}
 	};
 

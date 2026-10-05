@@ -1,0 +1,10 @@
+LIBRARY msvcrt.dll
+EXPORTS
+    _tcsclen
+    _tcslen
+    _tcscmp
+    _tcsicmp
+    _tcscpy
+    _tcsncpy
+    _tcsstr
+    _tcschr

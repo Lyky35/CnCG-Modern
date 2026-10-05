@@ -15,11 +15,18 @@ target_link_libraries(RTS
     WWSaveLoad
     WWAudio
     Compression
+    WWDownload
     WPAudio
     GameSpy
     VulkanRenderer
     FFmpegVideo
 )
+
+if(MINGW)
+    target_link_libraries(RTS
+        "${CMAKE_SOURCE_DIR}/cmake/mingw-import-libs/libtcsoldnames.a"
+    )
+endif()
 
 if(WIN32)
     target_link_libraries(RTS
@@ -36,8 +43,7 @@ if(WIN32)
         uuid
         odbc32
         odbccp32
-        d3d8
-        d3dx8
+        $<$<NOT:$<BOOL:${DX8VK_BRIDGE}>>:d3d8>
         dinput8
         dxguid
         dsound

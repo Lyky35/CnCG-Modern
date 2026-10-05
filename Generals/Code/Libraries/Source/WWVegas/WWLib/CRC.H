@@ -45,6 +45,16 @@
 	#include "osdep.h"
 #endif
 
+#ifndef _MSC_VER
+// MSVC provides _lrotl in <stdlib.h>; emulate it elsewhere.
+static inline unsigned long ww_emul_lrotl(unsigned long v, int c)
+{
+	c &= 31;
+	return (c == 0) ? v : ((v << c) | (v >> (32 - c)));
+}
+#define _lrotl(v, c) ((long)ww_emul_lrotl((unsigned long)(v), (c)))
+#endif
+
 /*
 **	This is a CRC engine class. It will process submitted data and generate a CRC from it.
 **	Well, actually, the value returned is not a true CRC. However, it shares the same strength

@@ -34,6 +34,9 @@
 #include "GameNetwork/GameInfo.h"
 #include "GameNetwork/Transport.h"
 
+struct _SBServer;
+typedef struct _SBServer * SBServer;
+
 class GameSpyGameSlot : public GameSlot
 {
 public:
@@ -146,7 +149,17 @@ public:
 	virtual void init(void);
 	virtual void resetAccepted(void);															///< Reset the accepted flag on all players
 
-	virtual void startGame(Int gameID);														///< Mark our game as started and record the game ID.
+	virtual void startGame(Int gameID);
+protected:
+	SBServer m_server;
+	Bool m_hasBeenQueried;
+public:
+
+	// GameSpy staging server handle (from the former GameSpyGameInfo class)
+	inline void setServer(SBServer server) { m_server = server; }
+	inline SBServer getServer(void) { return m_server; }
+	inline void gotGOACall(void) { m_hasBeenQueried = true; }
+														///< Mark our game as started and record the game ID.
 	void launchGame( void );																			///< NAT negotiation has finished - really start
 	virtual Int getLocalSlotNum( void ) const;										///< Get the local slot number, or -1 if we're not present
 

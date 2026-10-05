@@ -29,7 +29,7 @@
 #include "GameNetwork/NetPacket.h"
 #include "GameNetwork/NetCommandMsg.h"
 #include "GameNetwork/NetworkDefs.h"
-#include "GameNetwork/NetworkUtil.h"
+#include "GameNetwork/networkutil.h"
 #include "GameNetwork/GameMessageParser.h"
 
 #ifdef _INTERNAL
@@ -158,7 +158,7 @@ NetPacketList NetPacket::ConstructBigCommandPacketList(NetCommandRef *ref) {
 
 	if (!DoesCommandRequireACommandID(msg->getNetCommandType())) {
 		DEBUG_CRASH(("Trying to wrap a command that doesn't have a unique command ID"));
-		return NULL;
+		return NetPacketList();
 	}
 
 	UnsignedInt bufferSize = GetBufferSizeNeededForCommand(msg);  // need to implement.  I have a drinking problem.
@@ -5201,6 +5201,7 @@ NetCommandList * NetPacket::getCommandList() {
  */
 NetCommandMsg * NetPacket::readGameMessage(UnsignedByte *data, Int &i) 
 {
+	Int j = 0; // hoisted for MSVC-style for-scoping leaks
 	NetGameCommandMsg *msg = newInstance(NetGameCommandMsg);
 
 //	DEBUG_LOG_LEVEL(DEBUG_LEVEL_NET, ("NetPacket::readGameMessage\n"));

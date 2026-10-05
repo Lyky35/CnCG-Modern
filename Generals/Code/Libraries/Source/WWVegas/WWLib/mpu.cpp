@@ -37,7 +37,7 @@
 
 #include	"always.h"
 #include	"win.h"
-#include	"mpu.h"
+#include	"MPU.H"
 #include "math.h"
 #include <assert.h>
 #include <intrin.h>
@@ -222,7 +222,7 @@ int Get_RDTSC_CPU_Speed(void)
 
 		total = ( freq + freq2 + freq3 );		// Total last three frequency calcs
 
-	} while ( (tries < 3 ) || (tries < 20) && ((abs(3 * freq -total) > 3*TOLERANCE )|| (abs(3 * freq2-total) > 3*TOLERANCE )|| (abs(3 * freq3-total) > 3*TOLERANCE )));
+	} while ( (tries < 3 ) || (tries < 20) && ((abs((long)(3 * freq - total)) > 3*TOLERANCE )|| (abs((long)(3 * freq2 - total)) > 3*TOLERANCE )|| (abs((long)(3 * freq3 - total)) > 3*TOLERANCE )));
 
 	SetThreadPriority(thread, threadPri);
 	SetPriorityClass(process, processPri);

@@ -41,11 +41,13 @@ class SpecialPowerModule;
 class ParticleSystem;
 class FXList;
 class AudioEventRTS;
-enum  MaxHealthChangeType;
-enum  CommandOption;
+enum  MaxHealthChangeType : int;
+enum  CommandOption : int;
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
+enum MaxHealthChangeType : int;
+
 class BattlePlanUpdateModuleData : public ModuleData
 {
 public:
@@ -98,8 +100,7 @@ enum TransitionStatus
 	TRANSITIONSTATUS_PACKING,
 };
 
-enum BattlePlanStatus
-{
+enum BattlePlanStatus : int {
 	PLANSTATUS_NONE,
 	PLANSTATUS_BOMBARDMENT,
 	PLANSTATUS_HOLDTHELINE,

@@ -3,6 +3,13 @@
 #include "VulkanRenderer.h"
 #include <vector>
 
+// Base for anything the scene can draw (terrain chunk, mesh, sprite, ...).
+class VulkanRenderObject {
+public:
+    virtual ~VulkanRenderObject() {}
+    virtual void Render(VulkanRenderer* renderer, VulkanCamera* camera) = 0;
+};
+
 class VulkanScene {
 public:
     VulkanScene();

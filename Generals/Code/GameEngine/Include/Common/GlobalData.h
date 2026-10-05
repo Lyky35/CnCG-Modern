@@ -42,12 +42,12 @@
 
 // FORWARD DECLARATIONS ///////////////////////////////////////////////////////////////////////////
 struct FieldParse;
-typedef enum _TerrainLOD;
+#include "GameClient/TerrainLOD.h"
 class GlobalData;
 class INI;
 class WeaponBonusSet;
-enum BodyDamageType;
-enum AIDebugOptions;
+enum BodyDamageType : int;
+enum AIDebugOptions : int;
 
 // PUBLIC /////////////////////////////////////////////////////////////////////////////////////////
 

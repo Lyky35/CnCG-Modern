@@ -88,6 +88,7 @@ FirewallHelperClass * createFirewallHelper()
 
 FirewallHelperClass::FirewallHelperClass(void)
 {
+	Int i = 0; // hoisted for MSVC-style for-scoping leaks
 	//Added Sadullah Nader
 	//Initializations missing and needed
 	m_currentTry = 0;
@@ -440,6 +441,7 @@ void FirewallHelperClass::byteAdjust(ManglerData *data) {
  *=============================================================================================*/
 UnsignedShort FirewallHelperClass::getManglerResponse(UnsignedShort packetID, Int time)
 {
+	Int i = 0; // hoisted for MSVC-style for-scoping leaks
 	ManglerMessage *msg = NULL;
 
 //	SpareSocketStruct *spareSocket = NULL;
@@ -898,6 +900,7 @@ Bool FirewallHelperClass::detectionTest2Update() {
 }
 
 Bool FirewallHelperClass::detectionTest3Update() {
+	Int i = 0; // hoisted for MSVC-style for-scoping leaks
 	/*
 	** Try this whole thing a max of 3 times.
 	*/
@@ -957,6 +960,7 @@ Bool FirewallHelperClass::detectionTest3Update() {
 }
 
 Bool FirewallHelperClass::detectionTest3WaitForResponsesUpdate() {
+	Int i = 0; // hoisted for MSVC-style for-scoping leaks
 	for (Int i = 0; i < NUM_TEST_PORTS; ++i) {
 		if (m_mangledPorts[i] == 0) {
 			m_mangledPorts[i] = getManglerResponse(m_packetID + i);
@@ -1486,6 +1490,7 @@ Int FirewallHelperClass::getFirewallHardness(FirewallBehaviorType behavior)
  *=============================================================================================*/
 Int FirewallHelperClass::getFirewallRetries(FirewallBehaviorType behavior)
 {
+	Int i = 0; // hoisted for MSVC-style for-scoping leaks
 
 	Int retries = 2;
 
@@ -1526,6 +1531,7 @@ Int FirewallHelperClass::getFirewallRetries(FirewallBehaviorType behavior)
  *  returns TRUE if successful, FALSE otherwise.
  */
 Bool FirewallHelperClass::openSpareSocket(UnsignedShort port) {
+	Int i = 0; // hoisted for MSVC-style for-scoping leaks
 	for (Int i = 0; i < MAX_SPARE_SOCKETS; ++i) {
 		if (m_spareSockets[i].port == 0) {
 			break;

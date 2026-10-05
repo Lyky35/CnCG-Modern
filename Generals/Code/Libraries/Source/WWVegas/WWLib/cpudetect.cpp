@@ -20,7 +20,7 @@
 #include "wwstring.h"
 #include "wwdebug.h"
 #include "thread.h"
-#include "mpu.h"
+#include "MPU.H"
 #pragma warning (disable : 4201)	// Nonstandard extension - nameless struct
 #include <windows.h>
 #include <intrin.h>
@@ -823,7 +823,7 @@ void CPUDetectClass::Init_CPUID_Instruction()
    // because CodeWarrior seems to have problems with
    // the command (huh?)
 
-#ifdef WIN32
+#if defined(WIN32) && defined(_MSC_VER)
    // Check if CPUID is available by attempting to execute it under SEH
    cpuid_available = 0;
    __try {
@@ -834,8 +834,8 @@ void CPUDetectClass::Init_CPUID_Instruction()
    __except (EXCEPTION_EXECUTE_HANDLER) {
       cpuid_available = 0;
    }
-#elif defined(_UNIX)
-   cpuid_available = 1;  // Assume CPUID is available on modern Unix systems
+#elif defined(__GNUC__) || defined(_UNIX)
+   cpuid_available = 1;  // x86-64 targets always support CPUID
 #endif
 	HasCPUIDInstruction=!!cpuid_available;
 }
@@ -1096,7 +1096,7 @@ void CPUDetectClass::Init_Compact_Log()
 static class CPUDetectInitClass
 {
 public:
-	CPUDetectInitClass::CPUDetectInitClass()
+	CPUDetectInitClass()
 	{
 		CPUDetectClass::Init_CPUID_Instruction();
 		// We pretty much need CPUID, but let's not crash if it doesn't exist.

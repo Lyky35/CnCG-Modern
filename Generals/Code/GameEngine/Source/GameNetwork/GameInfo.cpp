@@ -29,7 +29,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
 
 #include "Common/CRCDebug.h"
-#include "Common/File.h"
+#include "Common/file.h"
 #include "Common/FileSystem.h"
 #include "Common/GameState.h"
 #include "GameClient/GameText.h"
@@ -747,6 +747,7 @@ void GameInfo::resetStartSpots()
 // players the map can hold.
 void GameInfo::adjustSlotsForMap()
 {
+	Int i = 0; // hoisted for MSVC-style for-scoping leaks
 	const MapMetaData *md = TheMapCache->findMap(m_mapName);
 	if (md != NULL)
 	{

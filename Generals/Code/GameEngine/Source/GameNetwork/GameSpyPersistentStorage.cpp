@@ -37,6 +37,9 @@
 #include "GameNetwork/GameSpyPersistentStorage.h"
 #include "GameNetwork/GameSpyThread.h"
 
+static void gamespy_msleep(unsigned long ms) { Sleep(ms); }
+
+
 static Bool isProfileAuthorized = false;
 
 static Bool gameSpyInitPersistentStorageConnection( void );
@@ -383,7 +386,7 @@ static Bool gameSpyInitPersistentStorageConnection( void )
 	while (!isProfileAuthorized && timeGetTime() < timeoutTime && IsStatsConnected())
 	{
 		PersistThink();
-		msleep(10);
+		gamespy_msleep(10);
 	}
 
 	DEBUG_LOG(("Persistent Storage connect: %d\n", isProfileAuthorized));

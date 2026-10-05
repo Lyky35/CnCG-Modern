@@ -23,13 +23,26 @@
 
 #include "Compression.h"
 #include "LZHCompress/NoxCompress.h"
-extern "C" {
-#include "ZLib/zlib.h"
-}
 #include "EAC/codex.h"
 #include "EAC/btreecodex.h"
 #include "EAC/huffcodex.h"
 #include "EAC/refcodex.h"
+
+// The game's BaseType.h already typedefs "Byte" (as signed char), which clashes with
+// zlib.h's "Byte". Only three zlib entry points are needed, so declare them directly
+// instead of including zlib.h from C++.
+#define ZLIB_OK 0
+#define ZLIB_STREAM_END 1
+
+extern "C" {
+int  compress2(unsigned char *dest, unsigned long *destLen,
+                 const unsigned char *source, unsigned long sourceLen, int level);
+int  uncompress(unsigned char *dest, unsigned long *destLen,
+                  const unsigned char *source, unsigned long sourceLen);
+unsigned long compressBound(unsigned long sourceLen);
+}
+
+#include <algorithm>
 
 #ifdef _INTERNAL
 // for occasional debugging...
@@ -262,9 +275,9 @@ Int CompressionManager::compressData( CompressionType compType, void *srcVoid, I
 		*(Int *)(dest+4) = 0;
 
 		unsigned long outLen = destLen;
-		Int err = z_compress2( dest+8, &outLen, src, srcLen, level );
+		Int err = compress2( dest+8, &outLen, src, srcLen, level );
 
-		if (err == Z_OK || err == Z_STREAM_END)
+		if (err == ZLIB_OK || err == ZLIB_STREAM_END)
 		{
 			*(Int *)(dest+4) = srcLen;
 			return outLen + 8;
@@ -333,8 +346,8 @@ Int CompressionManager::decompressData( void *srcVoid, Int srcLen, void *destVoi
 #endif
 
 		unsigned long outLen = destLen;
-		Int err = z_uncompress(dest, &outLen, src+8, srcLen-8);
-		if (err == Z_OK || err == Z_STREAM_END)
+		Int err = uncompress(dest, &outLen, src+8, srcLen-8);
+		if (err == ZLIB_OK || err == ZLIB_STREAM_END)
 		{
 			return outLen;
 		}
@@ -358,7 +371,7 @@ Int CompressionManager::decompressData( void *srcVoid, Int srcLen, void *destVoi
 
 #include "GameClient/MapUtil.h"
 #include "Common/FileSystem.h"
-#include "Common/File.h"
+#include "Common/file.h"
 
 #include "Common/PerfTimer.h"
 enum { NUM_TIMES = 10 };
@@ -475,8 +488,8 @@ void DoCompressTest( void )
 			CompData d = cd->second;
 
 			Real ratio = d.compressedSize[i]/(Real)d.origSize;
-			maxCompression = min(maxCompression, ratio);
-			minCompression = max(minCompression, ratio);
+			maxCompression = std::min(maxCompression, ratio);
+			minCompression = std::max(minCompression, ratio);
 
 			totalUncompressedBytes += d.origSize;
 			totalCompressedBytes += d.compressedSize[i];

@@ -124,7 +124,7 @@ Bool GameSpyInfo::sendChat( UnicodeString message, Bool isAction, GameWindow *pl
 		roomType = GroupRoom;
 
 	PeerRequest req;
-	req.text = message.str();
+	req.text = message.toSTLString();
 
 	message.trim();
 	// Echo the user's input to the chat window

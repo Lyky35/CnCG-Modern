@@ -42,7 +42,7 @@
 #include "Common/INIException.h"
 #include "Common/MessageStream.h"
 #include "Common/ThingFactory.h"
-#include "Common/File.h"
+#include "Common/file.h"
 #include "Common/FileSystem.h"
 #include "Common/ArchiveFileSystem.h"
 #include "Common/LocalFileSystem.h"
@@ -108,7 +108,7 @@
 #include "Common/Player.h"
 
 
-#include "Common/Version.h"
+#include "Common/version.h"
 
 #ifdef _INTERNAL
 // for occasional debugging...
@@ -171,7 +171,9 @@ void initSubsystem(SUBSYSTEM*& sysref, AsciiString name, SUBSYSTEM* sys, Xfer *p
 
 //-------------------------------------------------------------------------------------------------
 extern HINSTANCE ApplicationHInstance;  ///< our application instance
+#ifdef _MSC_VER
 extern CComModule _Module;
+#endif
 
 //-------------------------------------------------------------------------------------------------
 static void updateTGAtoDDS();
@@ -192,7 +194,9 @@ GameEngine::GameEngine( void )
 	m_quitting = FALSE;
 	m_isActive = FALSE;
 
+#ifdef _MSC_VER
 	_Module.Init(NULL, ApplicationHInstance);
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -227,7 +231,9 @@ GameEngine::~GameEngine()
 
 	Drawable::killStaticImages();
 
+#ifdef _MSC_VER
 	_Module.Term();
+#endif
 
 #ifdef PERF_TIMERS
 	PerfGather::termPerfDump();

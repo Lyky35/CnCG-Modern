@@ -30,7 +30,7 @@
 #include "Common/AudioEventRTS.h"
 #include "Common/CRCDebug.h"
 #include "Common/Debug.h"
-#include "Common/File.h"
+#include "Common/file.h"
 #include "Common/GameAudio.h"
 #include "Common/LocalFileSystem.h"
 #include "Common/Player.h"
@@ -45,7 +45,7 @@
 #include "GameNetwork/LANAPICallbacks.h"
 #include "GameNetwork/NAT.h"
 #include "GameNetwork/NetCommandWrapperList.h"
-#include "GameNetwork/NetworkUtil.h"
+#include "GameNetwork/networkutil.h"
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/ScriptActions.h"
 #include "GameLogic/ScriptEngine.h"
@@ -64,6 +64,7 @@
  */
 ConnectionManager::~ConnectionManager(void)
 {
+	Int i = 0; // hoisted for MSVC-style for-scoping leaks
 	if (m_localUser != NULL) {
 		m_localUser->deleteInstance();
 		m_localUser = NULL;
@@ -146,6 +147,7 @@ ConnectionManager::ConnectionManager(void)
  */
 void ConnectionManager::init() 
 {
+	Int i = 0; // hoisted for MSVC-style for-scoping leaks
 //	if (m_transport == NULL) {
 //		m_transport = new Transport;
 //	}
@@ -220,6 +222,7 @@ void ConnectionManager::init()
  */
 void ConnectionManager::reset() 
 {
+	Int i = 0; // hoisted for MSVC-style for-scoping leaks
 //	if (m_transport == NULL) {
 //		m_transport = new Transport;
 //	}
@@ -1550,6 +1553,7 @@ Int commandsReadyDebugSpewage = 0;
  * Returns true if all the commands for the given frame are ready to be executed.
  */
 Bool ConnectionManager::allCommandsReady(UnsignedInt frame, Bool justTesting /* = FALSE */) {
+	Int i = 0; // hoisted for MSVC-style for-scoping leaks
 	Bool retval = TRUE;
 	FrameDataReturnType frameRetVal;
 //	retval = FALSE;  // ****for testing purposes only!!!!!!****

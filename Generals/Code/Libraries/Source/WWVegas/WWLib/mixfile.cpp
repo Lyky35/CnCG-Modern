@@ -37,9 +37,9 @@
 #include "mixfile.h"
 #include "wwdebug.h"
 #include "ffactory.h"
-#include "wwfile.h"
+#include "WWFILE.H"
 #include "realcrc.h"
-#include "rawfile.h"
+#include "RAWFILE.H"
 #include "win.h"
 #include "bittype.h"
 
@@ -353,7 +353,7 @@ MixFileFactoryClass::Flush_Changes (void)
 		//
 		//	Add the new files that are pending
 		//
-		for (index = 0; index < PendingAddFileList.Count (); index ++) {
+		for (int index = 0; index < PendingAddFileList.Count (); index ++) {
 			new_mix_file.Add_File (PendingAddFileList[index].FullPath, PendingAddFileList[index].Filename);
 		}
 	}

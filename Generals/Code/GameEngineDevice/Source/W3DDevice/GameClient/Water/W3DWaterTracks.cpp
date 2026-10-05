@@ -43,13 +43,13 @@
 //			  and alpha.
 //-----------------------------------------------------------------------------
 
-#include "W3DDevice/GameClient/heightmap.h"
+#include "W3DDevice/GameClient/HeightMap.h"
 #include "W3DDevice/GameClient/W3DWaterTracks.h"
 #include "GameClient/InGameUI.h"
 #include "GameLogic/TerrainLogic.h"
-#include "common/GlobalData.h"
-#include "common/UnicodeString.h"
-#include "Common/File.h"
+#include "Common/GlobalData.h"
+#include "Common/UnicodeString.h"
+#include "Common/file.h"
 #include "Common/FileSystem.h"
 #include "texture.h"
 #include "colmath.h"
@@ -57,7 +57,7 @@
 #include "rinfo.h"
 #include "camera.h"
 #include "assetmgr.h"
-#include "WW3D2/DX8Wrapper.h"
+#include "WW3D2/dx8wrapper.h"
 
 //#pragma optimize("", off)
 
@@ -77,7 +77,7 @@ WaterTracksRenderSystem *TheWaterTracksRenderSystem=NULL;	///< singleton for tra
 
 static Bool pauseWaves=FALSE;
 
-enum waveType
+enum waveType : int
 {
 	WaveTypeFirst,
 	WaveTypePond=WaveTypeFirst,
@@ -175,7 +175,7 @@ Int WaterTracksObj::freeWaterTracksResources(void)
 *	the specified texture.
  */
 //=============================================================================
-void WaterTracksObj::init( Real width, Real length, Vector2 &start, Vector2 &end, Char *texturename, Int waveTimeOffset)
+void WaterTracksObj::init( Real width, Real length, const Vector2 &start, const Vector2 &end, Char *texturename, Int waveTimeOffset)
 {	
 	freeWaterTracksResources();	//free old resources used by this track
 
@@ -247,7 +247,7 @@ void WaterTracksObj::init( Real width, Real length, Vector2 &start, Vector2 &end
 *	defines the maximum distance the wave will reach.
  */
 //=============================================================================
-void WaterTracksObj::init( Real width, Vector2 &start, Vector2 &end, Char *texturename)
+void WaterTracksObj::init( Real width, const Vector2 &start, const Vector2 &end, Char *texturename)
 {	
 	freeWaterTracksResources();	//free old resources used by this track
 	m_boundingSphere.Init(Vector3(0,0,0),400);
@@ -850,7 +850,7 @@ void WaterTracksRenderSystem::update()
 }
 
 
-void TestWaterUpdate(void);
+static void TestWaterUpdate(void);
 void setFPMode( void );
 
 //=============================================================================

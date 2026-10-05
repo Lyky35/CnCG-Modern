@@ -174,7 +174,7 @@ static Int getFirstSelectablePlayer(const GameInfo *game)
 	if (!game->amIHost() || slot && slot->getPlayerTemplate() != PLAYERTEMPLATE_OBSERVER)
 		return game->getLocalSlotNum();
 
-	for (Int i=0; i<MAX_SLOTS; ++i)
+	Int i=0; for (; i<MAX_SLOTS; ++i)
 	{
 		slot = game->getConstSlot(i);
 		if (slot && slot->isAI())
@@ -196,7 +196,7 @@ static void playerTooltip(GameWindow *window,
 													UnsignedInt mouse)
 {
 	Int idx = -1;
-	for (Int i=0; i<MAX_SLOTS; ++i)
+	Int i=0; for (; i<MAX_SLOTS; ++i)
 	{
 		if (window && window == GadgetComboBoxGetEditBox(comboBoxPlayer[i]))
 		{
@@ -996,7 +996,7 @@ WindowMsgHandledType LanGameOptionsMenuInput( GameWindow *window, UnsignedInt ms
 					// send a simulated selected event to the parent window of the
 					// back/exit button
 					//
-					if( BitTest( state, KEY_STATE_UP ) )
+					if( WWBitTest( state, KEY_STATE_UP ) )
 					{
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED, 
 																							(WindowMsgData)buttonBack, buttonBackID );

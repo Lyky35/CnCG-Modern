@@ -608,7 +608,7 @@ private: \
 	
 // ----------------------------------------------------------------------------
 #define MEMORY_POOL_GLUE_WITHOUT_GCMP(ARGCLASS) \
-protected: \
+public: \
 	virtual ~ARGCLASS(); \
 public: \
 	enum ARGCLASS##MagicEnum { ARGCLASS##_GLUE_NOT_IMPLEMENTED = 0 }; \
@@ -649,7 +649,7 @@ protected: \
 		throw ERROR_BUG; \
 		return 0; \
 	} \
-	inline void operator delete(void *p) \
+	inline void operator delete(void *p) noexcept \
 	{ \
 		DEBUG_CRASH(("Please call deleteInstance instead of delete.")); \
 		ARGCLASS::getClassMemoryPool()->freeBlock(p); \
@@ -704,7 +704,7 @@ protected: \
 		throw ERROR_BUG; \
 		return 0; \
 	} \
-	inline void operator delete(void *p) \
+	inline void operator delete(void *p) noexcept \
 	{ \
 		DEBUG_CRASH(("this should be impossible to call (abstract base class)")); \
 	} \
@@ -745,7 +745,7 @@ protected:
 
 protected: 
 	inline void *operator new(size_t s) { DEBUG_CRASH(("This should be impossible")); return 0; }
-	inline void operator delete(void *p) { DEBUG_CRASH(("This should be impossible")); }
+	inline void operator delete(void *p) noexcept { DEBUG_CRASH(("This should be impossible")); }
 
 protected: 
 
@@ -863,10 +863,18 @@ extern void userMemoryAdjustPoolSize(const char *poolName, Int& initialAllocatio
 	#define _OPERATOR_NEW_DEFINED_
 
 	extern void * __cdecl operator new		(size_t size);
+#ifdef __GNUC__
+	extern void __cdecl operator delete		(void *p) noexcept;
+#else
 	extern void __cdecl operator delete		(void *p);
+#endif
 
 	extern void * __cdecl operator new[]	(size_t size);
+#ifdef __GNUC__
+	extern void __cdecl operator delete[]	(void *p) noexcept;
+#else
 	extern void __cdecl operator delete[]	(void *p);
+#endif
 
 	// additional overloads to account for VC/MFC funky versions
 	extern void* __cdecl operator new(size_t nSize, const char *, int);
@@ -878,8 +886,14 @@ extern void userMemoryAdjustPoolSize(const char *poolName, Int& initialAllocatio
 	// additional overloads for 'placement new'
 	//inline void* __cdecl operator new							(size_t s, void *p) { return p; }
 	//inline void __cdecl operator delete						(void *, void *p)		{ }
+#ifdef __GNUC__
+	// GCC: match the standard placement declarations from <new> instead of redefining them.
+	extern void* __cdecl operator new[]						(size_t s, void *p) noexcept;
+	extern void __cdecl operator delete[]					(void *p, void *) noexcept;
+#else
 	inline void* __cdecl operator new[]						(size_t s, void *p) { return p; }
 	inline void __cdecl operator delete[]					(void *, void *p)		{ }
+#endif
 
 #endif
 

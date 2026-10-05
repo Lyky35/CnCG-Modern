@@ -34,7 +34,7 @@
 #include "Common/Registry.h"
 #include "Common/StackDump.h"
 #include "Common/UserPreferences.h"
-#include "Common/Version.h"
+#include "Common/version.h"
 #include "GameNetwork/IPEnumeration.h"
 #include "GameNetwork/GameSpy/BuddyThread.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
@@ -113,7 +113,8 @@ enum
 	FACTION__KEY,
 	COLOR__KEY,
 	WINS__KEY,
-	LOSSES__KEY
+	LOSSES__KEY,
+	PID__KEY
 };
 
 #define EXECRC_STR		"exeCRC"
@@ -508,7 +509,7 @@ Int PeerThreadClass::findServer( SBServer server )
 	return addServerToMap(server);
 }
 
-static enum CallbackType
+enum CallbackType
 {
 	CALLBACK_CONNECT,
 	CALLBACK_ERROR,
@@ -1831,7 +1832,7 @@ void PeerThreadClass::handleQMMatch(PEER peer, Int mapIndex, Int seed,
 		PeerResponse resp;
 		resp.peerResponseType = PeerResponse::PEERRESPONSE_QUICKMATCHSTATUS;
 		resp.qmStatus.status = QM_MATCHED;
-		for (i=0; i<MAX_SLOTS; ++i)
+		for (Int i=0; i<MAX_SLOTS; ++i)
 		{
 			if (playerName[i])
 			{

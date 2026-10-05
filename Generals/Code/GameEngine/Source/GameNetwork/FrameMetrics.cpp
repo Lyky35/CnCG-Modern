@@ -28,7 +28,7 @@
 
 #include "GameNetwork/FrameMetrics.h"
 #include "GameClient/Display.h"
-#include "GameNetwork/NetworkUtil.h"
+#include "GameNetwork/networkutil.h"
 
 FrameMetrics::FrameMetrics() 
 {
@@ -68,6 +68,7 @@ FrameMetrics::~FrameMetrics() {
 }
 
 void FrameMetrics::init() {
+	Int i = 0; // hoisted for MSVC-style for-scoping leaks
 	m_averageFps = 30;
 	m_averageLatency = (Real)0.2;
 	m_minimumCushion = -1;

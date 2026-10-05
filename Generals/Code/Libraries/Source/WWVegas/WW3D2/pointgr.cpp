@@ -74,7 +74,7 @@
 #include "statistics.h"
 #include "simplevec.h"
 #include "texture.h"
-#include "vector.h"
+#include "Vector.H"
 #include "vp.h"
 #include "matrix4.h"
 #include "dx8wrapper.h"
@@ -1036,9 +1036,9 @@ void PointGroupClass::Update_Arrays(
 
 	if (VertexLoc.Length() < total_vnum) {
 		// Resize arrays (2x guardband to prevent frequent reallocations).
-		VertexLoc.Resize(total_vnum * 2, false);		
-		VertexUV.Resize(total_vnum * 2, false);
-		VertexDiffuse.Resize(total_vnum * 2, false);
+		VertexLoc.Resize(total_vnum * 2);		
+		VertexUV.Resize(total_vnum * 2);
+		VertexDiffuse.Resize(total_vnum * 2);
 	}
 
 	int vert, i, j;

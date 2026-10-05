@@ -1,0 +1,3 @@
+LIBRARY xaudio2.dll
+EXPORTS
+    XAudio2Create

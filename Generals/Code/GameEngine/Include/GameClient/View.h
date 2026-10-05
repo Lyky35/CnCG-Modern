@@ -32,11 +32,14 @@
 #ifndef _VIEW_H_
 #define _VIEW_H_
 
+enum FilterModes : int;
+enum FilterTypes : int;
+
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Common/GameType.h"
 #include "Common/Snapshot.h"
 #include "Lib/BaseType.h"
-#include "WW3D2/ColType.h"			///< we don't generally do this, but we need the W3D collision types
+#include "WW3D2/coltype.h"			///< we don't generally do this, but we need the W3D collision types
 
 #define DEFAULT_VIEW_WIDTH 640
 #define DEFAULT_VIEW_HEIGHT 480

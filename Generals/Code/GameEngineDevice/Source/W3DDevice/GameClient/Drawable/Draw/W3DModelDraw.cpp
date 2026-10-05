@@ -34,7 +34,7 @@
 
 #define NO_DEBUG_CRC
 
-#include "Common/CRC.h"
+#include "Common/crc.h"
 #include "Common/CRCDebug.h"
 #include "Common/GameState.h"
 #include "Common/GlobalData.h"
@@ -60,11 +60,11 @@
 #include "W3DDevice/GameClient/W3DShadow.h"
 #include "W3DDevice/GameClient/W3DTerrainTracks.h"
 #include "W3DDevice/GameClient/WorldHeightMap.h"
-#include "WW3D2/HAnim.h"
-#include "WW3D2/HLod.h"
-#include "WW3D2/RendObj.h"
-#include "WW3D2/Mesh.h"
-#include "WW3D2/MeshMdl.h"
+#include "WW3D2/hanim.h"
+#include "WW3D2/hlod.h"
+#include "WW3D2/rendobj.h"
+#include "WW3D2/mesh.h"
+#include "WW3D2/meshmdl.h"
 #include "Common/BitFlagsIO.h"
 
 #ifdef _INTERNAL
@@ -1047,7 +1047,8 @@ void W3DModelDrawModuleData::validateStuffForTimeAndWeather(const Drawable* draw
 
 	m_validated |= mode;
 
-	for (ModelConditionVector::iterator c_it = m_conditionStates.begin(); c_it != m_conditionStates.end(); ++c_it)
+	ModelConditionVector::iterator c_it;
+	for (c_it = m_conditionStates.begin(); c_it != m_conditionStates.end(); ++c_it)
 	{
 		if (!c_it->matchesMode(false, false) && !c_it->matchesMode(night, snowy))
 			continue;
@@ -1203,7 +1204,7 @@ enum AnimParseType
 //-------------------------------------------------------------------------------------------------
 static void parseAnimation(INI* ini, void *instance, void * /*store*/, const void* userData)
 {
-	AnimParseType animType = (AnimParseType)(UnsignedInt)userData;
+	AnimParseType animType = (AnimParseType)(uintptr_t)userData;
 
 	AsciiString animName = ini->getNextAsciiString();
 	animName.toLower();
@@ -1417,7 +1418,7 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 
 	ModelConditionInfo info;
 	W3DModelDrawModuleData* self = (W3DModelDrawModuleData*)instance;
-	ParseCondStateType cst = (ParseCondStateType)(UnsignedInt)userData;
+	ParseCondStateType cst = (ParseCondStateType)(uintptr_t)userData;
 	switch (cst)
 	{
 		case PARSE_DEFAULT:
@@ -3388,7 +3389,7 @@ Int W3DModelDraw::getPristineBonePositionsForConditionState(
 	Int posCount = 0;
 	Int endIndex = (startIndex == 0) ? 0 : 99;	
 	char buffer[256];
-	for (Int i = startIndex; i <= endIndex; ++i)
+	Int i = startIndex; for (; i <= endIndex; ++i)
 	{
 		if (i == 0)
 			strcpy(buffer, boneNamePrefix);
@@ -3502,7 +3503,7 @@ Int W3DModelDraw::getCurrentBonePositions(
 	Int posCount = 0;
 	Int endIndex = (startIndex == 0) ? 0 : 99;	
 	char buffer[256];
-	for (Int i = startIndex; i <= endIndex; ++i)
+	Int i = startIndex; for (; i <= endIndex; ++i)
 	{
 		if (i == 0)
 			strcpy(buffer, boneNamePrefix);
@@ -4189,7 +4190,7 @@ void W3DModelDrawModuleData::xfer( Xfer *x )
 				x->xferInt(&(bone->boneIndex));
 				x->xferUser(&(bone->mtx), sizeof(Matrix3D));
 			}
-			for (Int i=0; i<MAX_TURRETS; ++i)
+			Int i = 0; for (; i<MAX_TURRETS; ++i)
 			{
 				x->xferInt(&(info->m_turrets[i].m_turretAngleBone));
 				x->xferInt(&(info->m_turrets[i].m_turretPitchBone));

@@ -48,6 +48,12 @@ template<class T>
 class PriorityVectorClass : public DynamicVectorClass<T>
 {
 	public:
+		using DynamicVectorClass<T>::Vector;
+		using DynamicVectorClass<T>::ActiveCount;
+		using DynamicVectorClass<T>::Length;
+		using DynamicVectorClass<T>::Delete;
+		using DynamicVectorClass<T>::Add;
+		using DynamicVectorClass<T>::Grow;
 
 		virtual bool	Process_Head (T &object);
 		virtual bool	Add_Low (T const &object);

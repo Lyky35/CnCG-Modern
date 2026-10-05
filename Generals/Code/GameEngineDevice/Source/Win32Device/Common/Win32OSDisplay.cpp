@@ -32,7 +32,7 @@
 #include "Common/OSDisplay.h"
 
 #include "Common/SubsystemInterface.h"
-#include "Common/STLTypeDefs.h"
+#include "Common/STLTypedefs.h"
 #include "Common/AsciiString.h"
 #include "Common/SystemInfo.h"
 #include "Common/UnicodeString.h"
@@ -51,40 +51,40 @@ static void RTSFlagsToOSFlags(UnsignedInt buttonFlags, UnsignedInt otherFlags, U
 {
 	outWindowsFlags = 0;
 
-	if (BitTest(buttonFlags, OSDBT_OK)) {
+	if (WWBitTest(buttonFlags, OSDBT_OK)) {
 		outWindowsFlags |= MB_OK;
 	}
 	
-	if (BitTest(buttonFlags, OSDBT_CANCEL)) {
+	if (WWBitTest(buttonFlags, OSDBT_CANCEL)) {
 		outWindowsFlags |= MB_OKCANCEL;
 	}
 
 	//-----------------------------------------------------------------------------------------------
-	if (BitTest(otherFlags, OSDOF_SYSTEMMODAL)) {
+	if (WWBitTest(otherFlags, OSDOF_SYSTEMMODAL)) {
 		outWindowsFlags |= MB_SYSTEMMODAL;
 	}
 
-	if (BitTest(otherFlags, OSDOF_APPLICATIONMODAL)) {
+	if (WWBitTest(otherFlags, OSDOF_APPLICATIONMODAL)) {
 		outWindowsFlags |= MB_APPLMODAL;
 	}
 
-	if (BitTest(otherFlags, OSDOF_TASKMODAL)) {
+	if (WWBitTest(otherFlags, OSDOF_TASKMODAL)) {
 		outWindowsFlags |= MB_TASKMODAL;
 	}
 
-	if (BitTest(otherFlags, OSDOF_EXCLAMATIONICON)) {
+	if (WWBitTest(otherFlags, OSDOF_EXCLAMATIONICON)) {
 		outWindowsFlags |= MB_ICONEXCLAMATION;
 	}
 
-	if (BitTest(otherFlags, OSDOF_INFORMATIONICON)) {
+	if (WWBitTest(otherFlags, OSDOF_INFORMATIONICON)) {
 		outWindowsFlags |= MB_ICONINFORMATION;
 	}
 
-	if (BitTest(otherFlags, OSDOF_ERRORICON)) {
+	if (WWBitTest(otherFlags, OSDOF_ERRORICON)) {
 		outWindowsFlags |= MB_ICONERROR;
 	}
 
-	if (BitTest(otherFlags, OSDOF_STOPICON)) {
+	if (WWBitTest(otherFlags, OSDOF_STOPICON)) {
 		outWindowsFlags |= MB_ICONSTOP;
 	}
 

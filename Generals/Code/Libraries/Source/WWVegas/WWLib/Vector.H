@@ -61,6 +61,8 @@
 #include	<assert.h>
 #include	<stdlib.h>
 #include <string.h>
+#include <cstdint>
+#include <new>
 
 #ifdef _MSC_VER
 #pragma warning (disable : 4702) // unreachable code, happens with some uses of these templates
@@ -316,7 +318,7 @@ template<class T>
 inline int VectorClass<T>::ID(T const * ptr)
 {
 	if (!IsValid) return(0);
-	return(((unsigned long)ptr - (unsigned long)&(*this)[0]) / sizeof(T));
+	return(((uintptr_t)ptr - (uintptr_t)&(*this)[0]) / sizeof(T));
 }
 
 
@@ -486,6 +488,11 @@ template<class T>
 class DynamicVectorClass : public VectorClass<T>
 {
 	public:
+		using VectorClass<T>::Vector;
+		using VectorClass<T>::VectorMax;
+		using VectorClass<T>::IsAllocated;
+		using VectorClass<T>::Length;
+
 		DynamicVectorClass(unsigned size=0, T const * array=0);
 
 		// Stubbed equality operators so you can have dynamic vectors of dynamic vectors

@@ -52,7 +52,7 @@ RegistryClass::RegistryClass( const char * sub_key ) :
 			0, NULL, 0, KEY_ALL_ACCESS, NULL,
 			&key, &disposition ) == ERROR_SUCCESS) {
 		IsValid = true;
-		Key = (int)key;
+		Key = (int)(INT_PTR)key;
 	}
 }
 

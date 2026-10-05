@@ -1,3 +1,4 @@
+#include <string>
 #include "VulkanTerrainRenderer.h"
 #include "VulkanShader.h"
 #include "VulkanPipeline.h"
@@ -17,6 +18,10 @@ struct TerrainLightUBO {
     float ambientColor[3];
 };
 
+#ifdef VULKAN_GENERATED_SHADERS
+#include "GeneratedShaders/terrain_vert_spv.h"
+static const std::string TERRAIN_VERTEX_SHADER_SRC((const char*)terrain_vert_spv, terrain_vert_spv_len);
+#else
 static const char* TERRAIN_VERTEX_SHADER_SRC = R"(
 #version 450
 layout(location = 0) in vec3 inPosition;
@@ -37,7 +42,12 @@ void main() {
     outWorldPos = (ubo.model * vec4(inPosition, 1.0)).xyz;
 }
 )";
+#endif
 
+#ifdef VULKAN_GENERATED_SHADERS
+#include "GeneratedShaders/terrain_frag_spv.h"
+static const std::string TERRAIN_FRAGMENT_SHADER_SRC((const char*)terrain_frag_spv, terrain_frag_spv_len);
+#else
 static const char* TERRAIN_FRAGMENT_SHADER_SRC = R"(
 #version 450
 layout(location = 0) in vec2 inTexCoord;
@@ -62,6 +72,7 @@ void main() {
     outColor = texColor * lightColor * vec4(lighting, 1.0);
 }
 )";
+#endif
 
 VulkanTerrainRenderer::VulkanTerrainRenderer()
     : m_renderer(nullptr)

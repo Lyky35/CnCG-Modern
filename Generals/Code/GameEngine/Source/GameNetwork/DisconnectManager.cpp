@@ -31,7 +31,7 @@
 #include "GameLogic/GameLogic.h"
 #include "GameNetwork/DisconnectManager.h"
 #include "GameNetwork/NetworkInterface.h"
-#include "GameNetwork/NetworkUtil.h"
+#include "GameNetwork/networkutil.h"
 #include "GameNetwork/GameSpy/PingThread.h"
 #include "GameNetwork/GameSpy/GSConfig.h"
 
@@ -74,6 +74,7 @@ DisconnectManager::~DisconnectManager() {
 }
 
 void DisconnectManager::init() {
+	Int i = 0; // hoisted for MSVC-style for-scoping leaks
 	TheDisconnectMenu->hideScreen(); // make sure the screen starts out hidden.
 	m_lastFrame = 0;
 	m_lastFrameTime = -1;

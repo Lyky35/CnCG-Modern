@@ -269,10 +269,11 @@ void DX8TextureCategoryClass::Remove_Polygon_Renderer(DX8PolygonRendererClass* p
 
 void DX8FVFCategoryContainer::Remove_Texture_Category(DX8TextureCategoryClass* tex_category)
 {
-	for (unsigned pass=0;pass<passes;++pass) {
+	unsigned pass=0;
+	for (;pass<passes;++pass) {
 		texture_category_list[pass].Remove(tex_category);
 	}
-	for (pass=0; pass<passes; pass++) {
+	for (; pass<passes; pass++) {
 		// If any of the texture category lists has anything in it, no need to delete this container
 		if (texture_category_list[pass].Peek_Head() != NULL) return;
 	}
@@ -1553,7 +1554,7 @@ unsigned DX8TextureCategoryClass::Add_Mesh(
 					for (unsigned i=0;i<index_count;++i) {
 						unsigned short idx;
 
-						idx=unsigned short(strip[i+1]);
+						idx=static_cast<unsigned short>(strip[i+1]);
 						vmin=MIN(vmin,idx);
 						vmax=MAX(vmax,idx);
 						*dst_indices++=idx;
@@ -1600,19 +1601,19 @@ unsigned DX8TextureCategoryClass::Add_Mesh(
 				if (all_textures_same && Equal_Material(mat,material) && shd==shader) {
 					unsigned short idx;
 
-					idx=unsigned short(src_indices[i][0]+vertex_offset);
+					idx=static_cast<unsigned short>(src_indices[i][0]+vertex_offset);
 					vmin=MIN(vmin,idx);
 					vmax=MAX(vmax,idx);
 					*dst_indices++=idx;
 //					WWDEBUG_SAY(("%d, ",idx));
 
-					idx=unsigned short(src_indices[i][1]+vertex_offset);
+					idx=static_cast<unsigned short>(src_indices[i][1]+vertex_offset);
 					vmin=MIN(vmin,idx);
 					vmax=MAX(vmax,idx);
 					*dst_indices++=idx;
 //					WWDEBUG_SAY(("%d, ",idx));
 
-					idx=unsigned short(src_indices[i][2]+vertex_offset);
+					idx=static_cast<unsigned short>(src_indices[i][2]+vertex_offset);
 					vmin=MIN(vmin,idx);
 					vmax=MAX(vmax,idx);
 					*dst_indices++=idx;
@@ -2032,7 +2033,8 @@ void DX8MeshRendererClass::Register_Mesh_Type(MeshModelClass* mmc)
 			/*
 			** Search for an existing FVF Category Container that matches this mesh
 			*/
-			for (int i=0;i<texture_category_container_lists_rigid.Count();++i) {
+			int i=0;
+			for (;i<texture_category_container_lists_rigid.Count();++i) {
 				FVFCategoryList * list=texture_category_container_lists_rigid[i];
 				WWASSERT(list);
 				DX8FVFCategoryContainer * container=list->Peek_Head();

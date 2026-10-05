@@ -33,8 +33,7 @@
 //-------------------------------------------------------------------------------------------------
 /** Object status bits */
 //-------------------------------------------------------------------------------------------------
-enum ObjectStatusBits
-{
+enum ObjectStatusBits : int {
 	OBJECT_STATUS_NONE									= 0,					///< no status bit
 	OBJECT_STATUS_DESTROYED							=	(1 << 0),		///< has been destroyed, pending delete
 	OBJECT_STATUS_CAN_ATTACK						= (1 << 1),		///< used by garrissoned buildings, is OR'ed with KINDOF_CAN_ATTACK in isAbleToAttack()

@@ -65,7 +65,7 @@ public:
 	// Copy CTor and assignment operator assert for now - if anyone hits the
 	// assert we might need to actually implement them 8^).
 	TextureFileClass(const TextureFileClass & src);
-	TextureFileClass & TextureFileClass::operator = (const TextureFileClass &that);
+	TextureFileClass & operator = (const TextureFileClass &that);
 
 	// srClass functions:
 	virtual srClass* vInstance(void) { WWASSERT(0); return W3DNEW TextureFileClass(""); }

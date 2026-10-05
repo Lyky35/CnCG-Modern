@@ -50,7 +50,9 @@
 
 #include <cstddef>
 
-typedef void* HBINK;
+typedef unsigned int u32;
+struct _BINK;
+typedef struct _BINK * HBINK;
 
 #define BINKPRELOADALL	0x00000001
 #define BINKSURFACE32		0x00000002

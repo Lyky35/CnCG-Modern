@@ -126,3 +126,13 @@ void INI::parseWebpageURLDefinition( INI* ini )
 }  // end parseMusicTrackDefinition
 
 
+
+
+//-------------------------------------------------------------------------------------------------
+/** The INI data fields for Webpage URL's (moved here from the removed WOL Browser engine) */
+//-------------------------------------------------------------------------------------------------
+const FieldParse WebBrowserURL::m_URLFieldParseTable[] = 
+{
+	{ "URL",										INI::parseAsciiString,							NULL, offsetof( WebBrowserURL, m_url ) },
+	{ NULL,											NULL,																NULL, 0 },
+};

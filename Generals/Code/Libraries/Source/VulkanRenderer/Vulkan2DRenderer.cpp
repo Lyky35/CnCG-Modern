@@ -1,8 +1,13 @@
+#include <string>
 #include "Vulkan2DRenderer.h"
 #include "VulkanShader.h"
 #include <cstring>
 #include <cmath>
 
+#ifdef VULKAN_GENERATED_SHADERS
+#include "GeneratedShaders/ui_vert_spv.h"
+static const std::string VERTEX_SHADER_SRC((const char*)ui_vert_spv, ui_vert_spv_len);
+#else
 static const char* VERTEX_SHADER_SRC = R"(
 #version 450
 layout(location = 0) in vec2 inPosition;
@@ -16,7 +21,12 @@ void main() {
     outColor = inColor;
 }
 )";
+#endif
 
+#ifdef VULKAN_GENERATED_SHADERS
+#include "GeneratedShaders/ui_frag_spv.h"
+static const std::string FRAGMENT_SHADER_SRC((const char*)ui_frag_spv, ui_frag_spv_len);
+#else
 static const char* FRAGMENT_SHADER_SRC = R"(
 #version 450
 layout(location = 0) in vec2 inTexCoord;
@@ -27,6 +37,7 @@ void main() {
     outColor = texture(texSampler, inTexCoord) * inColor;
 }
 )";
+#endif
 
 static const size_t MAX_BATCH_VERTICES = 65536;
 

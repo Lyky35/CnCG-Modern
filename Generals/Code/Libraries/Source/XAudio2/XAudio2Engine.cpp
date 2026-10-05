@@ -37,6 +37,7 @@
 #include "Common/AudioEventRTS.h"
 #include "Common/AudioSettings.h"
 #include "Common/FileSystem.h"
+#include "Common/file.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -159,7 +160,7 @@ bool XAudio2Engine::LoadWavFile(const char *filename, XAUDIO2_BUFFER &buffer, WA
 			(fileData[pos + 6] << 16) |
 			(fileData[pos + 7] << 24);
 
-		if (memcmp(chunkId, "fmt ", 4) == 0 && pos + 8 + chunkSize <= (U32)fileSize) {
+		if (memcmp(chunkId, "fmt ", 4) == 0 && pos + 8 + chunkSize <= (UnsignedInt)fileSize) {
 			unsigned int fmtPos = pos + 8;
 			wfx.wFormatTag = fileData[fmtPos] | (fileData[fmtPos + 1] << 8);
 			wfx.nChannels = fileData[fmtPos + 2] | (fileData[fmtPos + 3] << 8);
@@ -177,7 +178,7 @@ bool XAudio2Engine::LoadWavFile(const char *filename, XAUDIO2_BUFFER &buffer, WA
 			foundFmt = true;
 		}
 
-		if (memcmp(chunkId, "data", 4) == 0 && pos + 8 + chunkSize <= (U32)fileSize) {
+		if (memcmp(chunkId, "data", 4) == 0 && pos + 8 + chunkSize <= (UnsignedInt)fileSize) {
 			buffer.AudioBytes = chunkSize;
 			buffer.pAudioData = fileData + pos + 8;
 			buffer.PlayBegin = 0;

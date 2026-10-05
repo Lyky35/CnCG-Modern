@@ -57,7 +57,8 @@ std::wstring MultiByteToWideCharSingleLine( const char *orig )
 	while ( c != NULL );
 
 	dest[len] = 0;
-	std::wstring ret = dest;
+	std::wstring ret;
+	for (const WideChar *p = dest; *p; ++p) ret.push_back((wchar_t)*p);
 	delete dest;
 	return ret;
 }

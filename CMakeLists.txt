@@ -8,7 +8,7 @@ project(CnC_Generals_Zero_Hour
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_EXTENSIONS ON)
 
 if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
     message(FATAL_ERROR "This project requires x64 (64-bit) build. Use -A x64 with MSVC.")
@@ -36,7 +36,7 @@ endif()
 if(MSVC)
     add_compile_options(/W3 /permissive- /Zc:__cplusplus /Zc:externConstexpr /Zc:throwingNew)
 else()
-    add_compile_options(-Wall -Wextra)
+    add_compile_options(-Wall -Wextra -fpermissive)
 endif()
 
 set(GAME_CODE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Generals/Code)
@@ -56,12 +56,13 @@ include_directories(
     ${WWVegas_DIR}/WW3D2
     ${GAME_CODE_DIR}/Libraries/Include/Granny
     ${GAME_CODE_DIR}/Libraries/Include/MSS
-    ${GAME_CODE_DIR}/Libraries/Source/GameSpy/Stub
-    ${CMAKE_CURRENT_SOURCE_DIR}/Generals/Code/Libraries/Source/VulkanRenderer
-    ${CMAKE_CURRENT_SOURCE_DIR}/Generals/Code/Libraries/Source/FFmpegVideo
+     ${GAME_CODE_DIR}/Libraries/Source/GameSpy/Stub
+     ${CMAKE_CURRENT_SOURCE_DIR}/Generals/Code/Libraries/Include/DX8Compat
+     ${CMAKE_CURRENT_SOURCE_DIR}/Generals/Code/Libraries/Source/VulkanRenderer
 )
 
 add_subdirectory(Generals/Code/Libraries/Source/Compression)
+add_subdirectory(Generals/Code/Libraries/Source/DX8Compat)
 add_subdirectory(Generals/Code/Libraries/Source/FFmpegVideo)
 add_subdirectory(Generals/Code/Libraries/Source/GameSpy)
 add_subdirectory(Generals/Code/Libraries/Source/VulkanRenderer)

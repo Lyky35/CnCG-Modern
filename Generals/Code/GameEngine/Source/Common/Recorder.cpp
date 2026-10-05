@@ -26,7 +26,7 @@
 
 #include "Common/Recorder.h"
 #include "Common/FileSystem.h"
-#include "Common/playerlist.h"
+#include "Common/PlayerList.h"
 #include "Common/Player.h"
 #include "Common/GlobalData.h"
 #include "Common/GameEngine.h"
@@ -39,11 +39,11 @@
 #include "GameNetwork/LANAPICallbacks.h"
 #include "GameNetwork/GameMessageParser.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
-#include "GameNetwork/NetworkUtil.h"
+#include "GameNetwork/networkutil.h"
 #include "GameLogic/GameLogic.h"
 #include "Common/RandomValue.h"
 #include "Common/CRCDebug.h"
-#include "Common/Version.h"
+#include "Common/version.h"
 
 #ifdef _INTERNAL
 // for occasional debugging...
@@ -1162,7 +1162,7 @@ Bool RecorderClass::playbackFile(AsciiString filename)
  * Read a unicode string from the current file position. The string is assumed to be 0-terminated.
  */
 UnicodeString RecorderClass::readUnicodeString() {
-	UnsignedShort str[1024] = L"";
+	UnsignedShort str[1024] = {0};
 	Int index = 0;
 
 	Int c = fgetwc(m_file);

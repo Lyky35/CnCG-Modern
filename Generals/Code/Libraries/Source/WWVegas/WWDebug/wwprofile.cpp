@@ -70,12 +70,12 @@
  * HISTORY:                                                                                    *
  *   9/24/2000  gth : Created.                                                                 *
  *=============================================================================================*/
-inline void WWProfile_Get_Ticks(_int64 * ticks)
+inline void WWProfile_Get_Ticks(__int64 * ticks)
 {
 #ifdef _UNIX
 	*ticks = 0;
 #else
-	*ticks = (_int64)__rdtsc();
+	*ticks = (__int64)__rdtsc();
 #endif
 }
 

@@ -76,10 +76,18 @@
 	#define _OPERATOR_NEW_DEFINED_
 
 	extern void * __cdecl operator new		(size_t size);
+#ifdef __GNUC__
+	extern void __cdecl operator delete		(void *p) noexcept;
+#else
 	extern void __cdecl operator delete		(void *p);
+#endif
 
 	extern void * __cdecl operator new[]	(size_t size);
+#ifdef __GNUC__
+	extern void __cdecl operator delete[]	(void *p) noexcept;
+#else
 	extern void __cdecl operator delete[]	(void *p);
+#endif
 
 	// additional overloads to account for VC/MFC funky versions
 	extern void* __cdecl operator new			(size_t nSize, const char *, int);
@@ -91,8 +99,19 @@
 	// additional overloads for 'placement new'
 	//inline void* __cdecl operator new							(size_t s, void *p) { return p; }
 	//inline void __cdecl operator delete						(void *, void *p)		{ }
+#ifdef __GNUC__
+	// GCC: match the standard placement declarations from <new> instead of redefining them.
+	extern void* __cdecl operator new[]						(size_t s, void *p) noexcept;
+	extern void __cdecl operator delete[]					(void *p, void *) noexcept;
+#else
+#ifdef __GNUC__
+	extern void* __cdecl operator new[]						(size_t s, void *p) noexcept;
+	extern void __cdecl operator delete[]					(void *p, void *) noexcept;
+#else
 	inline void* __cdecl operator new[]						(size_t s, void *p) { return p; }
 	inline void __cdecl operator delete[]					(void *, void *p)		{ }
+#endif
+#endif
 
 #endif
 
@@ -132,7 +151,7 @@ protected: \
 	virtual int glueEnforcer() const { return sizeof(this); } \
 public: \
 	inline void* operator new(size_t s) { return allocateFromW3DMemPool(getClassMemoryPool(), s); } \
-	inline void operator delete(void *p) { freeFromW3DMemPool(getClassMemoryPool(), p); } \
+	inline void operator delete(void *p) noexcept { freeFromW3DMemPool(getClassMemoryPool(), p); } \
 	inline void* operator new(size_t s, const char* msg, int unused) { return allocateFromW3DMemPool(getClassMemoryPool(), s, msg, unused); } \
 	inline void operator delete(void *p, const char* msg, int unused) { freeFromW3DMemPool(getClassMemoryPool(), p); } \
 
@@ -215,6 +234,19 @@ template <class T> T max(T a,T b)
 	}
 }
 
+// Mixed-type overloads (the single-template versions above cannot deduce when the
+// argument types differ, which the old min/max macros tolerated).
+#ifdef __cplusplus
+#ifndef WWLIB_MIXED_MINMAX_DEFINED
+#define WWLIB_MIXED_MINMAX_DEFINED
+#include <type_traits>
+template <class A, class B>
+inline typename std::common_type<A, B>::type min(A a, B b) { return (a < b) ? a : b; }
+template <class A, class B>
+inline typename std::common_type<A, B>::type max(A a, B b) { return (a > b) ? a : b; }
+#endif
+#endif
+
 
 /*
 **	This includes the minimum set of compiler defines and pragmas in order to bring the
@@ -230,7 +262,7 @@ template <class T> T max(T a,T b)
 #endif
 
 #if defined(__WATCOMC__)
-#include	"watcom.h"
+#include	"WATCOM.H"
 #endif
 
 

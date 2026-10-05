@@ -30,7 +30,7 @@
 #include "dx8wrapper.h"
 #include "dx8caps.h"
 #include "missingtexture.h"
-#include "targa.h"
+#include "TARGA.H"
 #include <D3dx8tex.h>
 #include <cstdio>
 #include "wwmemlog.h"
@@ -91,7 +91,7 @@ static class LoaderThreadClass : public ThreadClass
 	static void Add_Task_To_Finished_List(TextureLoadTaskClass* task);
 
 public:
-	LoaderThreadClass::LoaderThreadClass() : ThreadClass() {}
+	LoaderThreadClass() : ThreadClass() {}
 
 	void Thread_Function();
 

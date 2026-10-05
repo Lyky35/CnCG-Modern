@@ -50,6 +50,8 @@
 
 //-----------------------------------------------------------------------------
 // srj sez: hack festival :-(
+#include <cstddef>
+
 class STLSpecialAlloc
 {
 public:
@@ -60,6 +62,7 @@ public:
 
 
 #include "w3d_dep.h"
+#include <cstddef>
 #include "w3d_file.h"
 #include <assert.h>
 #include <chunkio.h>

@@ -130,9 +130,9 @@ SimplePersistFactoryClass<T,CHUNKID>::Load(ChunkLoadClass & cload) const
 template<class T, int CHUNKID> void
 SimplePersistFactoryClass<T,CHUNKID>::Save(ChunkSaveClass & csave,PersistClass * obj) const 
 {
-	uint64 objptr = (uint64)obj;
+	unsigned __int64 objptr = (unsigned __int64)obj;
 	csave.Begin_Chunk(SIMPLEFACTORY_CHUNKID_OBJPOINTER);
-	csave.Write(&objptr,sizeof(uint64));
+	csave.Write(&objptr,sizeof(unsigned __int64));
 	csave.End_Chunk();
 
 	csave.Begin_Chunk(SIMPLEFACTORY_CHUNKID_OBJDATA);

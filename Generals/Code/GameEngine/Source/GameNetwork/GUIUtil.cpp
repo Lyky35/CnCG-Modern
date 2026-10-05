@@ -186,6 +186,7 @@ void ShowUnderlyingGUIElements( Bool show, const char *layoutFilename, const cha
 
 void PopulateColorComboBox(Int comboBox, GameWindow *comboArray[], GameInfo *myGame, Bool isObserver)
 {
+	Int i = 0; // hoisted for MSVC-style for-scoping leaks
 	Int numColors = TheMultiplayerSettings->getNumColors();
 	UnicodeString colorName;
 	std::vector<bool> availableColors;
@@ -386,14 +387,14 @@ void UpdateSlotList( GameInfo *myGame, GameWindow *comboPlayer[],
 				//Color In the little accepted boxes
 					if(slot->isAccepted())
 					{
-						if(BitTest(buttonAccept[i]->winGetStatus(), WIN_STATUS_IMAGE	))
+						if(WWBitTest(buttonAccept[i]->winGetStatus(), WIN_STATUS_IMAGE	))
 							buttonAccept[i]->winEnable(TRUE);
 						else
 							GadgetButtonSetEnabledColor(buttonAccept[i], acceptTrueColor );
 					}
 					else
 					{
-						if(BitTest(buttonAccept[i]->winGetStatus(), WIN_STATUS_IMAGE	))
+						if(WWBitTest(buttonAccept[i]->winGetStatus(), WIN_STATUS_IMAGE	))
 							buttonAccept[i]->winEnable(FALSE);
 						else
 							GadgetButtonSetEnabledColor(buttonAccept[i], acceptFalseColor );
@@ -418,7 +419,7 @@ void UpdateSlotList( GameInfo *myGame, GameWindow *comboPlayer[],
 					comboPlayer[i]->winEnable( FALSE );
 			}
 			//if( i == myGame->getLocalSlotNum())
-      if((comboColor[i] != NULL) && BitTest(comboColor[i]->winGetStatus(), WIN_STATUS_ENABLED))
+      if((comboColor[i] != NULL) && WWBitTest(comboColor[i]->winGetStatus(), WIN_STATUS_ENABLED))
 				PopulateColorComboBox(i, comboColor, myGame, myGame->getConstSlot(i)->getPlayerTemplate() == PLAYERTEMPLATE_OBSERVER);
 			Int max, idx;
 			if (comboColor[i] != NULL) {

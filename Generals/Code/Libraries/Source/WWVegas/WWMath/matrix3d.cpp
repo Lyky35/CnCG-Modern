@@ -690,56 +690,6 @@ void Matrix3D::Multiply(const Matrix3D & A,const Matrix3D & B,Matrix3D * set_res
 #endif
 }
 
-void Matrix3D::Multiply(const Matrix3D & A,const Matrix3D & B,Matrix3D * set_res)
-{
-	assert(set_res != NULL);
-
-	Matrix3D * Aptr;
-	float tmp1,tmp2,tmp3;
-
-	if (set_res == &A)
-	{
-		Matrix3D tmpMat;
-		tmpMat = A;
-		Aptr = &tmpMat;
-	}
-	else
-	{
-		Aptr = const_cast<Matrix3D*>(&A);
-	}
-
-	tmp1 = B[0][0];
-	tmp2 = B[1][0];
-	tmp3 = B[2][0];
-
-	(*set_res)[0][0] = (*Aptr)[0][0]*tmp1 + (*Aptr)[0][1]*tmp2 + (*Aptr)[0][2]*tmp3;
-	(*set_res)[1][0] = (*Aptr)[1][0]*tmp1 + (*Aptr)[1][1]*tmp2 + (*Aptr)[1][2]*tmp3;
-	(*set_res)[2][0] = (*Aptr)[2][0]*tmp1 + (*Aptr)[2][1]*tmp2 + (*Aptr)[2][2]*tmp3;
-
-	tmp1 = B[0][1];
-	tmp2 = B[1][1];
-	tmp3 = B[2][1];
-
-	(*set_res)[0][1] = (*Aptr)[0][0]*tmp1 + (*Aptr)[0][1]*tmp2 + (*Aptr)[0][2]*tmp3;
-	(*set_res)[1][1] = (*Aptr)[1][0]*tmp1 + (*Aptr)[1][1]*tmp2 + (*Aptr)[1][2]*tmp3;
-	(*set_res)[2][1] = (*Aptr)[2][0]*tmp1 + (*Aptr)[2][1]*tmp2 + (*Aptr)[2][2]*tmp3;
-
-	tmp1 = B[0][2];
-	tmp2 = B[1][2];
-	tmp3 = B[2][2];
-
-	(*set_res)[0][2] = (*Aptr)[0][0]*tmp1 + (*Aptr)[0][1]*tmp2 + (*Aptr)[0][2]*tmp3;
-	(*set_res)[1][2] = (*Aptr)[1][0]*tmp1 + (*Aptr)[1][1]*tmp2 + (*Aptr)[1][2]*tmp3;
-	(*set_res)[2][2] = (*Aptr)[2][0]*tmp1 + (*Aptr)[2][1]*tmp2 + (*Aptr)[2][2]*tmp3;
-
-	tmp1 = B[0][3];
-	tmp2 = B[1][3];
-	tmp3 = B[2][3];
-
-	(*set_res)[0][3] = (*Aptr)[0][0]*tmp1 + (*Aptr)[0][1]*tmp2 + (*Aptr)[0][2]*tmp3 + (*Aptr)[0][3];
-	(*set_res)[1][3] = (*Aptr)[1][0]*tmp1 + (*Aptr)[1][1]*tmp2 + (*Aptr)[1][2]*tmp3 + (*Aptr)[1][3];
-	(*set_res)[2][3] = (*Aptr)[2][0]*tmp1 + (*Aptr)[2][1]*tmp2 + (*Aptr)[2][2]*tmp3 + (*Aptr)[2][3];
-}
 
 /***********************************************************************************************
  * Matrix3D::Transform_Min_Max_AABox -- compute transformed axis-aligned box                   *

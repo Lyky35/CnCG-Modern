@@ -37,7 +37,7 @@
 #include "Common/Thing.h"
 #include "Common/Geometry.h"
 #include "GameClient/Color.h"
-#include "WWMath/Matrix3D.h"
+#include "WWMath/matrix3d.h"
 #include "GameClient/DrawableInfo.h"
 
 // FORWARD REFERENCES /////////////////////////////////////////////////////////////////////////////
@@ -55,7 +55,7 @@ class Shadow;
 class ModuleInfo;
 class Anim2DTemplate;
 class Image;
-enum BodyDamageType;
+enum BodyDamageType : int;
 
 // this is a very worthwhile performance win. left conditionally defined for now, just 
 // in case, but probably should be made permanent soon. (srj)
@@ -210,8 +210,7 @@ private:
 EMPTY_DTOR(TintEnvelope)
 
 //-----------------------------------------------------------------------------
-enum StealthLookType
-{
+enum StealthLookType : int {
 	STEALTHLOOK_NONE,								///< unit is not stealthed at all
 	STEALTHLOOK_VISIBLE_FRIENDLY,		///< unit is stealthed-but-visible due to friendly status
 	STEALTHLOOK_DISGUISED_ENEMY,		///< we can have units that are disguised (instead of invisible)
@@ -249,8 +248,7 @@ enum TintStatus
 // Note: these values are saved in save files, so you MUST NOT REMOVE OR CHANGE
 // existing values!
 //
-enum TerrainDecalType
-{
+enum TerrainDecalType : int {
 #ifdef ALLOW_DEMORALIZE
 	TERRAIN_DECAL_DEMORALIZED = 0,
 #else
@@ -296,7 +294,7 @@ public:
 	
 	void setTintStatus( TintStatus statusBits ) { BitSet( m_tintStatus, statusBits ); };
 	void clearTintStatus( TintStatus statusBits ) { BitClear( m_tintStatus, statusBits ); };
-	Bool testTintStatus( TintStatus statusBits ) const { return BitTest( m_tintStatus, statusBits ); };
+	Bool testTintStatus( TintStatus statusBits ) const { return WWBitTest( m_tintStatus, statusBits ); };
 	TintEnvelope *getColorTintEnvelope( void ) { return m_colorTintEnvelope; }
 	void setColorTintEnvelope( TintEnvelope &source ) { if (m_colorTintEnvelope) *m_colorTintEnvelope = source; }
 
@@ -358,7 +356,7 @@ public:
 	UnsignedInt getShroudClearFrame( void ) { return m_shroudClearFrame; }
  
 	void setShadowsEnabled(Bool enable);
-	Bool getShadowsEnabled() const { return BitTest(m_status, DRAWABLE_STATUS_SHADOWS); }
+	Bool getShadowsEnabled() const { return WWBitTest(m_status, DRAWABLE_STATUS_SHADOWS); }
 
 	void releaseShadows(void);	///< frees all shadow resources used by this module - used by Options screen.
 	void allocateShadows(void); ///< create shadow resources if not already present. Used by Options screen.
@@ -366,7 +364,7 @@ public:
 	void setFullyObscuredByShroud(Bool fullyObscured);
 	inline Bool getFullyObscuredByShroud(void) {return m_drawableFullyObscuredByShroud;}
 
-	Bool getDrawsInMirror() const { return BitTest(m_status, DRAWABLE_STATUS_DRAWS_IN_MIRROR) || isKindOf(KINDOF_CAN_CAST_REFLECTIONS); }
+	Bool getDrawsInMirror() const { return WWBitTest(m_status, DRAWABLE_STATUS_DRAWS_IN_MIRROR) || isKindOf(KINDOF_CAN_CAST_REFLECTIONS); }
 
 	void colorFlash( const RGBColor *color, UnsignedInt decayFrames = DEF_DECAY_FRAMES, UnsignedInt attackFrames = 0, UnsignedInt sustainAtPeak = FALSE );  ///< flash a drawable in the color specified for a short time
 	void colorTint( const RGBColor *color );	 ///< tint this drawable the color specified

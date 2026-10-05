@@ -5,7 +5,8 @@ list(FILTER GAMEENGINEDEVICE_SOURCES EXCLUDE REGEX ".*MilesAudioManager\\.cpp$")
 
 add_library(GameEngineDevice STATIC ${GAMEENGINEDEVICE_SOURCES})
 
-target_include_directories(GameEngineDevice PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Include")
+target_include_directories(GameEngineDevice PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Include"
+    "${GAME_CODE_DIR}/Main")
 
 target_link_libraries(GameEngineDevice
     GameEngine
@@ -19,4 +20,5 @@ target_link_libraries(GameEngineDevice
     WPAudio
     GameSpy
     XAudio2
+    FFmpegVideo
 )

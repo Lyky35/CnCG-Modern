@@ -51,6 +51,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <string>
 #include "Lib/BaseType.h"
 #include "Common/Debug.h"
 #include "Common/Errors.h"
@@ -179,6 +180,18 @@ public:
 		private data, since it might be shared amongst other UnicodeStrings.
 	*/
 	const WideChar* str() const;
+#if defined(__GNUC__) && !defined(_MSC_VER)
+	// MinGW: convert engine UTF-16 (unsigned short) string to std::wstring (32-bit wchar_t).
+	std::wstring toSTLString() const
+	{
+		std::wstring r;
+		const WideChar* w = str();
+		if (w) {
+			for (; *w; ++w) r.push_back((wchar_t)*w);
+		}
+		return r;
+	}
+#endif
 
 	/**
 		Makes sure there is room for a string of len+1 characters, and
@@ -218,6 +231,18 @@ public:
 		Concatenate the given string onto self.
 	*/
 	void concat(const WideChar* s);
+#if defined(__GNUC__) && !defined(_MSC_VER)
+	// MinGW's wchar_t is 32-bit while the engine's WideChar is 16-bit; accept native
+	// wide literals (L"...") by narrowing them.
+	void concat(const wchar_t* s)
+	{
+		WideChar tmp[512];
+		size_t i = 0;
+		for (; s && s[i] && i < 511; ++i) tmp[i] = (WideChar)s[i];
+		tmp[i] = 0;
+		concat(tmp);
+	}
+#endif
 	/**
 		Concatenate the given character onto self.
 	*/
@@ -258,11 +283,11 @@ public:
 	*/
 	int compare(const WideChar* s) const;
 	/**
-		Conceptually identical to _wcsicmp().
+		Conceptually identical to ww_wcsicmp().
 	*/
 	int compareNoCase(const UnicodeString& stringSrc) const;
 	/**
-		Conceptually identical to _wcsicmp().
+		Conceptually identical to ww_wcsicmp().
 	*/
 	int compareNoCase(const WideChar* s) const;
 
@@ -404,14 +429,14 @@ inline int UnicodeString::compare(const WideChar* s) const
 inline int UnicodeString::compareNoCase(const UnicodeString& stringSrc) const
 {
 	validate();
-	return _wcsicmp(this->str(), stringSrc.str());
+	return ww_wcsicmp(this->str(), stringSrc.str());
 }
 
 // -----------------------------------------------------
 inline int UnicodeString::compareNoCase(const WideChar* s) const
 {
 	validate();
-	return _wcsicmp(this->str(), s);
+	return ww_wcsicmp(this->str(), s);
 }
 
 // -----------------------------------------------------

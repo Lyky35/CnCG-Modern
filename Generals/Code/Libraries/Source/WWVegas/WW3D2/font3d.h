@@ -111,6 +111,7 @@ public:
 	** access texture material
 	*/
 	TextureClass *	Peek_Texture( void )								{ return Texture; }
+	TextureClass *	Peek_Texture( int /*character*/ )					{ return Texture; }
 
 private:
 	/*
@@ -162,6 +163,7 @@ public:
 	** access texture material
 	*/
 	TextureClass *Peek_Texture( void ) { return FontData->Peek_Texture(); }
+	TextureClass *Peek_Texture( int character ) { return FontData->Peek_Texture( character ); }
 
 	/*
 	** The non-scaled monospace char width in pixels ( set to 0 for proportional spaced font )

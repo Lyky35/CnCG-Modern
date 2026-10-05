@@ -44,13 +44,21 @@
 #include "GameClient/MessageBox.h"
 #include "GameClient/GameText.h"
 #include "GameClient/MapUtil.h"
-#include "Common/Version.h"
+#include "Common/version.h"
 #include "Common/MultiplayerSettings.h"
 #include "Common/PlayerTemplate.h"
 #include "Common/RandomValue.h"
 #include "Common/GlobalData.h"
 #include "Common/UserPreferences.h"
 #include "GameLogic/ScriptEngine.h"
+
+// Free helpers that live in the staging-room implementation / menu code
+void GameSpyStartGame( void );
+void GameSpyLaunchGame( void );
+void WOLDisplaySlotList( void );
+Bool GetLocalChatConnectionAddress(AsciiString serverName, UnsignedShort serverPort, UnsignedInt& localIP);
+
+
 
 MutexClass TheGameSpyMutex;
 static UnsignedInt mainThreadID = 0;
@@ -249,7 +257,7 @@ void GameSpyChat::update( void )
 		{
 			TheShell->pop();
 			TheShell->push(TheGameSpyThread->getNextShellScreen());
-			TheGameSpyThread->setNextShellScreen( AsciiString.TheEmptyString );
+			TheGameSpyThread->setNextShellScreen( AsciiString::TheEmptyString );
 		}
 
 		if (TheGameSpyThread->showLocaleSelect())
@@ -284,7 +292,7 @@ void GameSpyChat::update( void )
 
 		if (TheFirewallHelper != NULL) {
 			if (TheFirewallHelper->behaviorDetectionUpdate()) {
-				TheGlobalData->m_firewallBehavior = TheFirewallHelper->getFirewallBehavior();
+				TheWritableGlobalData->m_firewallBehavior = TheFirewallHelper->getFirewallBehavior();
 				OptionPreferences *pref = NEW OptionPreferences;
 				char num[16];
 				num[0] = 0;
@@ -323,6 +331,7 @@ void GameSpyChat::update( void )
 		}
 	}
 }
+
 
 Bool GameSpyChat::isConnected( void )
 {
@@ -529,6 +538,7 @@ void populateLobbyPlayerListbox(void);
 void PlayerJoinedCallback(PEER peer, RoomType roomType,
 													const char * nick, void * param)
 {
+	Int i = 0; // hoisted for MSVC-style for-scoping leaks
 	if (roomType == GroupRoom && TheGameSpyChat->getCurrentGroupRoomID())
 	{
 		populateLobbyPlayerListbox();
@@ -1114,7 +1124,8 @@ void ListGroupRoomsCallback(PEER peer, PEERBool success,
 		else
 		{
 			// we've got the complete list.
-			UpdateGroupRoomList();
+			// UpdateGroupRoomList(): the WOL lobby refresh helper was dropped from this
+			// source release; nothing to update in the stubbed multiplayer layer.
 		}
 	}
 }
@@ -1163,7 +1174,7 @@ void GameSpyChat::_connectCallback(PEER peer, PEERBool success, void * param)
 
 	DEBUG_LOG(("Connected as profile %d (%s)\n", m_profileID, m_loginName.str()));
 
-	TheGameSpyGame = NEW GameSpyGameInfo;
+	TheGameSpyGame = NEW GameSpyStagingRoom;
 
 	// Enable controls again
 	//EnableLoginControls(TRUE);

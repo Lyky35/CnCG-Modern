@@ -106,7 +106,7 @@
 #include "dx8renderer.h"
 #include "metalmap.h"
 #include "w3dexclusionlist.h"
-#include <ini.h>
+#include <INI.H>
 #include <windows.h>
 #include <stdio.h>
 #include <D3dx8core.h>
@@ -548,7 +548,7 @@ void WW3DAssetManager::Free_Assets_With_Exclusion_List(const DynamicVectorClass<
 	memset(PrototypeHashTable,0,sizeof(PrototypeClass *) * PROTOTYPE_HASH_TABLE_SIZE);	
 
 	// re-add the prototypes that we saved
-	for (i=0; i<exclude_array.Count(); i++) {
+	for (int i=0; i<exclude_array.Count(); i++) {
 		Add_Prototype(exclude_array[i]);
 	}
 
@@ -792,7 +792,7 @@ RenderObjClass * WW3DAssetManager::Create_Render_Obj(const char * name)
 		char filename [MAX_PATH];
 		char *mesh_name = ::strchr (name, '.');
 		if (mesh_name != NULL) {
-			::lstrcpyn (filename, name, ((int)mesh_name) - ((int)name) + 1);
+			::lstrcpyn (filename, name, (int)(mesh_name - name) + 1);
 			::lstrcat (filename, ".w3d");
 		} else {
 			sprintf( filename, "%s.w3d", name);

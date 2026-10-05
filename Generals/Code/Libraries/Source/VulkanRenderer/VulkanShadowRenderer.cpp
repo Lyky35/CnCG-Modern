@@ -1,8 +1,13 @@
+#include <string>
 #include "VulkanShadowRenderer.h"
 #include "VulkanShader.h"
 #include <cstring>
 #include <cmath>
 
+#ifdef VULKAN_GENERATED_SHADERS
+#include "GeneratedShaders/shadow_vert_spv.h"
+static const std::string SHADOW_VERTEX_SHADER_SRC((const char*)shadow_vert_spv, shadow_vert_spv_len);
+#else
 static const char* SHADOW_VERTEX_SHADER_SRC = R"(
 #version 450
 layout(binding = 0) uniform LightUBO {
@@ -13,6 +18,7 @@ void main() {
     gl_Position = viewProjection * vec4(inPosition, 1.0);
 }
 )";
+#endif
 
 static VkFormat GetDepthFormat(VkPhysicalDevice physicalDevice)
 {

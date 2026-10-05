@@ -461,6 +461,7 @@ NATConnectionState NAT::connectionUpdate() {
 // after calling this, you should call the update function untill it returns
 // NATSTATE_DONE.
 void NAT::establishConnectionPaths() {
+	Int i = 0; // hoisted for MSVC-style for-scoping leaks
 	DEBUG_LOG(("NAT::establishConnectionPaths - entering\n"));
 	m_NATState = NATSTATE_DOCONNECTIONPATHS;
 	DEBUG_LOG(("NAT::establishConnectionPaths - using %d as our starting port number\n", m_startingPortNumber));
@@ -655,6 +656,7 @@ Transport * NAT::getTransport() {
 // send the port number to our target for this round.
 // init the m_connectionStates for all players.
 void NAT::doThisConnectionRound() {
+	Int i = 0; // hoisted for MSVC-style for-scoping leaks
 	DEBUG_LOG(("NAT::doThisConnectionRound - starting process for connection round %d\n", m_connectionRound));
 	// clear out the states from the last round.
 	m_targetNodeNumber = -1;
@@ -1284,6 +1286,7 @@ void NAT::processGlobalMessage(Int slotNum, const char *options) {
 }
 
 void NAT::setConnectionState(Int nodeNumber, NATConnectionState state) {
+	Int i = 0; // hoisted for MSVC-style for-scoping leaks
 	m_connectionStates[nodeNumber] = state;
 
 	if (nodeNumber != m_localNodeNumber) {

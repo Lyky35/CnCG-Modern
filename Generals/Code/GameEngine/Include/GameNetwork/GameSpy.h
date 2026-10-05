@@ -32,6 +32,7 @@
 #define __GameSpy_H__
 
 #include "GameSpy/Peer/Peer.h"
+#include "GameSpy/GP/GP.h"
 
 #include "GameClient/Color.h"
 #include "Common/STLTypedefs.h"

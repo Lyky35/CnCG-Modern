@@ -55,7 +55,7 @@
 #ifndef INDEX_H
 #define INDEX_H
 
-#include	"bsearch.h"
+#include	"BSEARCH.H"
 
 #if !defined(__BORLANDC__) || !defined(_USERENTRY)
 #define	_USERENTRY
@@ -694,6 +694,8 @@ int _USERENTRY IndexClass<INDEX, T>::search_compfunc(void const * ptr1, void con
 template<class INDEX, class T>
 #ifdef __BORLANDC__
 NodeElement const * IndexClass<INDEX, T>::Search_For_Node(INDEX const & id) const
+#elif defined(__GNUC__)
+typename IndexClass<INDEX, T>::NodeElement const * IndexClass<INDEX, T>::Search_For_Node(INDEX const & id) const
 #else
 IndexClass<INDEX, T>::NodeElement const * IndexClass<INDEX, T>::Search_For_Node(INDEX const & id) const
 #endif

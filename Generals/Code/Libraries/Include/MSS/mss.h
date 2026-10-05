@@ -280,7 +280,7 @@ inline void      AIL_set_3D_velocity_vector(H3DSAMPLE sample, float x, float y, 
 // 3D provider / listener
 inline S32         AIL_enumerate_3D_providers(HPROENUM *next, HPROVIDER *provider, char **name)
 {
-	(void)next; (void)provider; (void*name;
+	(void)next; (void)provider; (void*)name;
 	return 0;
 }
 inline S32         AIL_open_3D_provider(HPROVIDER provider) { (void)provider; return M3D_NOERR; }
@@ -290,7 +290,7 @@ inline void        AIL_close_3D_listener(H3DPOBJECT listener) { (void)listener; 
 inline void        AIL_set_3D_speaker_type(HPROVIDER provider, U32 type) { (void)provider; (void)type; }
 inline S32         AIL_enumerate_filters(HPROENUM *next, HPROVIDER *provider, char **name)
 {
-	(void)next; (void)provider; (void*name;
+	(void)next; (void)provider; (void*)name;
 	return 0;
 }
 inline void        AIL_get_DirectSound_info(HSAMPLE sample, void **ds, void *unused)

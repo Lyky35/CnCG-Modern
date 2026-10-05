@@ -111,8 +111,8 @@ public:
 	bool			Is_Empty (void) const;
 
 	void			Erase (int start_index, int char_count);
-	int _cdecl  Format (const WCHAR *format, ...);
-	int _cdecl  Format_Args (const WCHAR *format, const va_list & arg_list );
+	int __cdecl  Format (const WCHAR *format, ...);
+	int __cdecl  Format_Args (const WCHAR *format, const va_list & arg_list );
 	void			Convert_From (const char *text);
 	void			Convert_To (StringClass &string);
 	void			Convert_To (StringClass &string) const;

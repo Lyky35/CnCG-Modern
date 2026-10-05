@@ -26,11 +26,11 @@
 
 #define WIN32_LEAN_AND_MEAN  // only bare bones windows stuff wanted
 
-#include "Common/CRC.h"
+#include "Common/crc.h"
 #include "Common/GameState.h"
 #include "Common/Registry.h"
 #include "GameNetwork/LANAPI.h"
-#include "GameNetwork/NetworkUtil.h"
+#include "GameNetwork/networkutil.h"
 #include "Common/GlobalData.h"
 #include "Common/RandomValue.h"
 #include "GameClient/GameText.h"
@@ -681,7 +681,7 @@ void LANAPI::RequestGameLeave( void )
 	LANMessage msg;
 	msg.LANMessageType = LANMessage::MSG_REQUEST_GAME_LEAVE;
 	fillInLANMessage( &msg );
-	wcsncpy(msg.GameToLeave.gameName, (m_currentGame)?m_currentGame->getName().str():L"", g_lanGameNameLength);
+	wcsncpy(msg.GameToLeave.gameName, (m_currentGame)?m_currentGame->getName().str(): (const WideChar *)L"", g_lanGameNameLength);
 	msg.GameToLeave.gameName[g_lanGameNameLength] = 0;
 	sendMessage(&msg);
 	m_transport->update();  // Send immediately, before OnPlayerLeave below resets everything.
@@ -785,7 +785,7 @@ void LANAPI::RequestChat( UnicodeString message, ChatType format )
 {
 	LANMessage msg;
 	fillInLANMessage( &msg );
-	wcsncpy(msg.Chat.gameName, (m_currentGame)?m_currentGame->getName().str():L"", g_lanGameNameLength);
+	wcsncpy(msg.Chat.gameName, (m_currentGame)?m_currentGame->getName().str(): (const WideChar *)L"", g_lanGameNameLength);
 	msg.Chat.gameName[g_lanGameNameLength] = 0;
 	msg.LANMessageType = LANMessage::MSG_CHAT;
 	msg.Chat.chatType = format;

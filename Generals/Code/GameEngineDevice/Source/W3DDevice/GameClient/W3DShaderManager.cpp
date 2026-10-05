@@ -56,22 +56,22 @@
 #include "dx8wrapper.h"
 #include "assetmgr.h"
 #include "Lib/BaseType.h"
-#include "Common/File.h"
+#include "Common/file.h"
 #include "Common/FileSystem.h"
 #include "W3DDevice/GameClient/W3DShaderManager.h"
 #include "W3DDevice/GameClient/W3DShroud.h"
 #include "W3DDevice/GameClient/HeightMap.h"
 #include "W3DDevice/GameClient/W3DCustomScene.h"
-#include "GameClient/view.h"
+#include "GameClient/View.h"
 #include "GameClient/CommandXlat.h"
-#include "GameClient/display.h"
+#include "GameClient/Display.h"
 #include "GameClient/Water.h"
 #include "GameLogic/GameLogic.h"
-#include "common/GlobalData.h"
-#include "common/GameLOD.h"
+#include "Common/GlobalData.h"
+#include "Common/GameLOD.h"
 #include "d3dx8tex.h"
 #include "dx8caps.h"
-#include "common/gamelod.h"
+#include "Common/GameLOD.h"
 #include "Benchmark.h"
 
 #ifdef _INTERNAL
@@ -287,7 +287,7 @@ Int ScreenBWFilter::set(enum FilterModes mode)
 		DX8Wrapper::Apply_Render_State_Changes();	//force update of view and projection matrices
 
 		hr=DX8Wrapper::_Get_D3D_Device8()->SetPixelShader(m_dwBWPixelShader);
-		DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(0,   D3DXVECTOR4(0.3f, 0.59f, 0.11f, 1.0f), 1);
+		{ D3DXVECTOR4 v4const = D3DXVECTOR4(0.3f, 0.59f, 0.11f, 1.0f); DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(0, (const void*)&v4const, 1); };
 
 		D3DXVECTOR4	color(1.0f,1.0f,1.0f,1.0f);	//multiply color
 
@@ -315,14 +315,14 @@ Int ScreenBWFilter::set(enum FilterModes mode)
 			color.z = 0.0f;
 		}
 
-		DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(1,   color, 1);
-		DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(2,	D3DXVECTOR4(m_curFadeValue, m_curFadeValue, m_curFadeValue, 1.0f), 1);
-/*		DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(2,   D3DXVECTOR4(150.0f/255.0f, 150.0f/255.0f, 150.0f/255.0f, 0.0f), 1);
-		DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(3,   D3DXVECTOR4((765.0f/450.0f)/3, (765.0f/450.0f)/3, (765.0f/450.0f)/3, 1.0f), 1);
-		DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(4,   D3DXVECTOR4(0.5f, 0.5f, 0.5f, 0), 1);
-		DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(5,   D3DXVECTOR4((60.0f)/255.0f, (60.0f)/255.0f, (60.0f)/255.0f, 0), 1);
-		DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(6,   D3DXVECTOR4((157.0f)/255.0f, (157.0f)/255.0f, (157.0f)/255.0f, 0), 1);
-		DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(7,   D3DXVECTOR4((30.0f)/255.0f, (30.0f)/255.0f, (30.0f)/255.0f, 0), 1);
+		DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(1, (const void*)&color, 1);
+		{ D3DXVECTOR4 v4const = D3DXVECTOR4(m_curFadeValue, m_curFadeValue, m_curFadeValue, 1.0f); DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(2, (const void*)&v4const, 1); };
+/*		{ D3DXVECTOR4 v4const = D3DXVECTOR4(150.0f/255.0f, 150.0f/255.0f, 150.0f/255.0f, 0.0f); DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(2, (const void*)&v4const, 1); };
+		{ D3DXVECTOR4 v4const = D3DXVECTOR4((765.0f/450.0f)/3, (765.0f/450.0f)/3, (765.0f/450.0f)/3, 1.0f); DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(3, (const void*)&v4const, 1); };
+		{ D3DXVECTOR4 v4const = D3DXVECTOR4(0.5f, 0.5f, 0.5f, 0); DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(4, (const void*)&v4const, 1); };
+		{ D3DXVECTOR4 v4const = D3DXVECTOR4((60.0f)/255.0f, (60.0f)/255.0f, (60.0f)/255.0f, 0); DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(5, (const void*)&v4const, 1); };
+		{ D3DXVECTOR4 v4const = D3DXVECTOR4((157.0f)/255.0f, (157.0f)/255.0f, (157.0f)/255.0f, 0); DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(6, (const void*)&v4const, 1); };
+		{ D3DXVECTOR4 v4const = D3DXVECTOR4((30.0f)/255.0f, (30.0f)/255.0f, (30.0f)/255.0f, 0); DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(7, (const void*)&v4const, 1); };
 */
 		return true;
 	}
@@ -2444,7 +2444,7 @@ void W3DShaderManager::shutdown(void)
 		}
 	}
 
- 	for ( i=0; i < FT_MAX; i++)
+ 	for (int i=0; i < FT_MAX; i++)
  	{	
  		if (W3DFilters[i])
  		{

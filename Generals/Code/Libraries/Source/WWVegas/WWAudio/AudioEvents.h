@@ -149,6 +149,12 @@ template <class T>
 class AudioCallbackListClass : public SimpleDynVecClass< AUDIO_CALLBACK_STRUCT<T> >
 {
 public:
+	using SimpleDynVecClass< AUDIO_CALLBACK_STRUCT<T> >::Vector;
+	using SimpleDynVecClass< AUDIO_CALLBACK_STRUCT<T> >::ActiveCount;
+	using SimpleDynVecClass< AUDIO_CALLBACK_STRUCT<T> >::Delete;
+
+
+public:
 
 	/////////////////////////////////////////////////////////////////////////////////
 	//	Public constructors/destructors

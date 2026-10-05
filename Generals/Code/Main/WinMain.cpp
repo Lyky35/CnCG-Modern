@@ -59,10 +59,10 @@
 #include "GameClient/IMEManager.h"
 #include "Win32Device/GameClient/Win32Mouse.h"
 #include "Win32Device/Common/Win32GameEngine.h"
-#include "Common/Version.h"
+#include "Common/version.h"
 #include "BuildVersion.h"
 #include "GeneratedVersion.h"
-#include "Resource.h"
+#include "resource.h"
 
 #ifdef _INTERNAL
 // for occasional debugging...
@@ -770,6 +770,21 @@ static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWin
 	return true;  // success
 
 }  // end initializeAppWindows
+
+// SafeDisk's CdaPfn.h (anti-tamper overhead markers) is not part of the public
+// source dump; the markers are compile-time-only hints and vanish in codegen.
+#ifndef CDAPFN_OVERHEAD_L5
+#define CDAPFN_OVERHEAD_L5 0
+#endif
+#ifndef CDAPFN_CONSTRAINT_NONE
+#define CDAPFN_CONSTRAINT_NONE 0
+#endif
+#ifndef CDAPFN_DECLARE_GLOBAL
+#define CDAPFN_DECLARE_GLOBAL(func, overhead, constraint)
+#endif
+#ifndef CDAPFN_ENDMARK
+#define CDAPFN_ENDMARK(func)
+#endif
 
 void munkeeFunc(void);
 CDAPFN_DECLARE_GLOBAL(munkeeFunc, CDAPFN_OVERHEAD_L5, CDAPFN_CONSTRAINT_NONE);

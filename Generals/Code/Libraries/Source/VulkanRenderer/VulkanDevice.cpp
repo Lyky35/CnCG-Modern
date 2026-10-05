@@ -298,7 +298,7 @@ void VulkanDevice::BeginFrame()
 {
     vkWaitForFences(m_device, 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
     vkResetFences(m_device, 1, &m_inFlightFences[m_currentFrame]);
-    vkResetCommandBuffer(vkAllocateCommandBuffer(), 0);
+    vkResetCommandBuffer(AllocateCommandBuffer(), 0);
 }
 
 void VulkanDevice::EndFrame()

@@ -97,12 +97,48 @@
 //#define abs(x) (((x) < 0) ? -(x) : (x))
 //#endif
 
+#ifdef __cplusplus
+// The legacy min/max macros corrupt C++ standard library headers (std headers use
+// min/max as identifiers). In C++ we provide type-safe templated equivalents that
+// accept mixed argument types, matching the macro's value semantics.
+// MSVC's SEH-to-C++ translator hook used by the GameSpy threads; not available
+// under MinGW, where asynchronous exceptions are disabled anyway: accept and ignore.
+#ifndef _MSC_VER
+#ifndef __BASETYPE_SEH_SHIM__
+#define __BASETYPE_SEH_SHIM__
+struct _EXCEPTION_POINTERS;
+typedef void (*_se_translator_function)(unsigned int code, struct _EXCEPTION_POINTERS *info);
+inline _se_translator_function _set_se_translator(_se_translator_function f) { (void)f; return 0; }
+#endif
+#endif
+
+
+#ifndef WWLIB_MIXED_MINMAX_DEFINED
+#define WWLIB_MIXED_MINMAX_DEFINED
+#include <type_traits>
+
+template <class A, class B>
+inline typename std::common_type<A, B>::type min(A a, B b)
+{
+	return (a < b) ? a : b;
+}
+
+template <class A, class B>
+inline typename std::common_type<A, B>::type max(A a, B b)
+{
+	return (a > b) ? a : b;
+}
+#endif
+#else
+
 #ifndef min
 #define min(x,y) (((x)<(y)) ? (x) : (y))
 #endif
 
 #ifndef max
 #define max(x,y) (((x)>(y)) ? (x) : (y))
+#endif
+
 #endif
 
 #ifndef TRUE
@@ -129,10 +165,99 @@ typedef bool							Bool;							//
 typedef __int64						Int64;							// 8 bytes 
 typedef unsigned __int64	UnsignedInt64;	  	// 8 bytes 
 
-#include "Lib/Trig.h"
+#include "Lib/trig.h"
 
 //-----------------------------------------------------------------------------
+#if defined(__GNUC__) && !defined(_MSC_VER)
+// MSVC's wchar_t is 16-bit (UTF-16 code units), which the engine's string
+// layer assumes. MinGW's wchar_t is 32-bit, so use unsigned short there.
+typedef unsigned short WideChar;  ///< multi-byte character representations
+#else
 typedef wchar_t WideChar;  ///< multi-byte character representations
+#endif
+
+#if defined(__GNUC__) && !defined(_MSC_VER)
+// The engine's string layer uses WideChar (16-bit UTF-16 code units) pointers with
+// the standard wide-char helpers. MinGW's wchar_t is 32-bit, so provide overloads
+// that operate on unsigned-short sequences.
+#include <stddef.h>
+static inline size_t wcslen(const WideChar* s)
+{
+	size_t n = 0;
+	while (s[n]) ++n;
+	return n;
+}
+static inline int wcscmp(const WideChar* a, const WideChar* b)
+{
+	while (*a && *a == *b) { ++a; ++b; }
+	return (int)*a - (int)*b;
+}
+static inline int wcsncmp(const WideChar* a, const WideChar* b, size_t n)
+{
+	for (size_t i = 0; i < n; ++i) {
+		if (!*a || *a != *b) return (int)*a - (int)*b;
+		++a; ++b;
+	}
+	return 0;
+}
+static inline WideChar* wcscpy(WideChar* d, const WideChar* s)
+{
+	WideChar* r = d;
+	while ((*d++ = *s++)) ;
+	return r;
+}
+static inline WideChar* wcsncpy(WideChar* d, const WideChar* s, size_t n)
+{
+	WideChar* r = d;
+	while (n && (*d++ = *s++)) --n;
+	while (n--) *d++ = 0;
+	return r;
+}
+static inline WideChar* wcscat(WideChar* d, const WideChar* s)
+{
+	WideChar* r = d;
+	while (*d) ++d;
+	while ((*d++ = *s++)) ;
+	return r;
+}
+static inline int wcscmp(const WideChar* a, const wchar_t* b)
+{
+	for (;; ++a, ++b) {
+		wchar_t ca = (wchar_t)*a;
+		if (ca != *b) return (int)ca - (int)*b;
+		if (!ca) return 0;
+	}
+}
+static inline WideChar* wcsncpy(WideChar* d, const wchar_t* s, size_t n)
+{
+	size_t i = 0;
+	for (; i < n && s[i]; ++i) d[i] = (WideChar)s[i];
+	while (i < n) d[i++] = 0;
+	return d;
+}
+static inline const WideChar* wcschr(const WideChar* s, WideChar c)
+{
+	while (*s && *s != c) ++s;
+	return *s ? s : 0;
+}
+static inline WideChar* wcschr(WideChar* s, WideChar c)
+{
+	return (WideChar*)wcschr((const WideChar*)s, c);
+}
+static inline int ww_wcsicmp(const WideChar* a, const WideChar* b)
+{
+	for (;;) {
+		WideChar ca = *a, cb = *b;
+		if (ca >= 'A' && ca <= 'Z') ca += 32;
+		if (cb >= 'A' && cb <= 'Z') cb += 32;
+		if (ca != cb) return (int)ca - (int)cb;
+		if (!ca) return 0;
+		++a; ++b;
+	}
+}
+
+static inline int wcsncmp_simple(const WideChar* a, const WideChar* b) { return wcscmp(a, b); }
+#endif
 
 //-----------------------------------------------------------------------------
 template <typename NUM>
@@ -164,7 +289,12 @@ inline Real deg2rad(Real rad) { return rad * (PI/180); }
 //-----------------------------------------------------------------------------
 // For twiddling bits
 //-----------------------------------------------------------------------------
-#define BitTest( x, i ) ( ( (x) & (i) ) != 0 )
+// winnt.h (x86 intrinsics section) #defines BitTest to _bittest; make sure the
+// game's macro wins regardless of include order.
+#ifdef BitTest
+#undef BitTest
+#endif
+#define WWBitTest( x, i ) ( ( (x) & (i) ) != 0 )
 #define BitSet( x, i ) ( (x) |= (i) )
 #define BitClear( x, i ) ( (x ) &= ~(i) )
 #define BitToggle( x, i ) ( (x) ^= (i) )

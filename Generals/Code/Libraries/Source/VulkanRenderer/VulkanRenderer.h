@@ -31,6 +31,7 @@ public:
     void SetPipeline(VulkanPipeline* pipeline);
 
     VulkanDevice* GetDevice() { return &m_device; }
+    VulkanPipeline* GetPipeline() const { return m_pipeline; }
     VkRenderPass GetRenderPass() const { return m_renderPass; }
     VkCommandBuffer GetCurrentCommandBuffer() const { return m_currentCmd; }
 
@@ -38,6 +39,7 @@ public:
 
 private:
     VulkanDevice m_device;
+    VulkanPipeline* m_pipeline = nullptr;
     VkRenderPass m_renderPass;
     std::vector<VkFramebuffer> m_framebuffers;
     VkCommandBuffer m_currentCmd;

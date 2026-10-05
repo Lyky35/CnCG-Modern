@@ -1,9 +1,14 @@
+#include <string>
 #include "VulkanParticleRenderer.h"
 #include "VulkanShader.h"
 #include <cstring>
 #include <cmath>
 #include <algorithm>
 
+#ifdef VULKAN_GENERATED_SHADERS
+#include "GeneratedShaders/particle_vert_spv.h"
+static const std::string PARTICLE_VERTEX_SHADER_SRC((const char*)particle_vert_spv, particle_vert_spv_len);
+#else
 static const char* PARTICLE_VERTEX_SHADER_SRC = R"(
 #version 450
 layout(location = 0) in vec3 inPosition;
@@ -21,7 +26,12 @@ void main() {
     outTexCoord = vec2(0.0);
 }
 )";
+#endif
 
+#ifdef VULKAN_GENERATED_SHADERS
+#include "GeneratedShaders/particle_frag_spv.h"
+static const std::string PARTICLE_FRAGMENT_SHADER_SRC((const char*)particle_frag_spv, particle_frag_spv_len);
+#else
 static const char* PARTICLE_FRAGMENT_SHADER_SRC = R"(
 #version 450
 layout(location = 0) in vec4 inColor;
@@ -38,6 +48,7 @@ void main() {
     outColor = vec4(inColor.rgb * texColor.rgb, alpha);
 }
 )";
+#endif
 
 struct ParticleVertex {
     float x, y, z;

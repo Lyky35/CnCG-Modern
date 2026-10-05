@@ -204,8 +204,7 @@ extern const char *TheVeterancyNames[];
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-enum CommandSourceType 
-{ 
+enum CommandSourceType : int { 
 
 	CMD_FROM_PLAYER = 0, 
 	CMD_FROM_SCRIPT, 

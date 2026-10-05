@@ -894,3 +894,126 @@ void GameSpyStagingRoom::reset(void)
 #endif
 	GameInfo::reset();
 }
+
+
+// Free launcher helpers (moved from the obsolete GameSpyGameInfo.cpp).
+void GameSpyStartGame( void )
+{
+	if (TheGameSpyGame)
+	{
+		int i;
+
+		int numUsers = 0;
+		for (i=0; i<MAX_SLOTS; ++i)
+		{
+			GameSlot *slot = TheGameSpyGame->getSlot(i);
+			if (slot && slot->isOccupied())
+				numUsers++;
+		}
+
+		if (numUsers < 2)
+		{
+			if (TheGameSpyGame->amIHost())
+			{
+				UnicodeString text;
+				text.format(TheGameText->fetch("LAN:NeedMorePlayers"),numUsers);
+				TheGameSpyInfo->addText(text, GSCOLOR_DEFAULT, NULL);
+			}
+			return;
+		}
+
+		TheGameSpyGame->startGame(0);
+	}
+}
+
+void GameSpyLaunchGame( void )
+{
+	if (TheGameSpyGame)
+	{
+
+		// Set up the game network
+		AsciiString user;
+		AsciiString userList;
+		DEBUG_ASSERTCRASH(TheNetwork == NULL, ("For some reason TheNetwork isn't NULL at the start of this game.  Better look into that."));
+
+		if (TheNetwork != NULL) {
+			delete TheNetwork;
+			TheNetwork = NULL;
+		}
+
+		// Time to initialize TheNetwork for this game.
+		TheNetwork = NetworkInterface::createNetwork();
+		TheNetwork->init();
+		/*
+		if (!TheGameSpyGame->amIHost())
+			TheNetwork->setLocalAddress((207<<24) | (138<<16) | (47<<8) | 15, 8088);
+		else
+		*/
+		TheNetwork->setLocalAddress(TheGameSpyGame->getLocalIP(), TheNAT->getSlotPort(TheGameSpyGame->getLocalSlotNum()));
+		TheNetwork->attachTransport(TheNAT->getTransport());
+
+		user = TheGameSpyInfo->getLocalName();
+		for (Int i=0; i<MAX_SLOTS; ++i)
+		{
+			GameSlot *slot = TheGameSpyGame->getSlot(i);
+			if (!slot)
+			{
+				DEBUG_CRASH(("No GameSlot[%d]!", i));
+				delete TheNetwork;
+				TheNetwork = NULL;
+				return;
+			}
+
+//			UnsignedInt ip = htonl(slot->getIP());
+			UnsignedInt ip = slot->getIP();
+			AsciiString tmpUserName;
+			tmpUserName.translate(slot->getName());
+			if (ip)
+			{
+				/*
+				if (i == 1)
+				{
+					user.format(",%s@207.138.47.15:8088", tmpUserName.str());
+				}
+				else
+				*/
+				{
+				user.format(",%s@%d.%d.%d.%d:%d", tmpUserName.str(),
+					((ip & 0xff000000) >> 24),
+					((ip & 0xff0000) >> 16),
+					((ip & 0xff00) >> 8),
+					((ip & 0xff)),
+					TheNAT->getSlotPort(i)
+					);
+				}
+				userList.concat(user);
+			}
+		}
+		userList.trim();
+
+		TheNetwork->parseUserList(TheGameSpyGame);
+
+		// shutdown the top, but do not pop it off the stack
+//		TheShell->hideShell();
+		// setup the Global Data with the Map and Seed
+		TheWritableGlobalData->m_pendingFile = TheGameSpyGame->getMap();
+
+		if (TheGameLogic->isInGame()) {
+			TheGameLogic->clearGameData();
+		}
+		// send a message to the logic for a new game
+		GameMessage *msg = TheMessageStream->appendMessage( GameMessage::MSG_NEW_GAME );
+		msg->appendIntegerArgument(GAME_INTERNET);
+
+		TheWritableGlobalData->m_useFpsLimit = false;
+
+		// Set the random seed
+		InitGameLogicRandom( TheGameSpyGame->getSeed() );
+		DEBUG_LOG(("InitGameLogicRandom( %d )\n", TheGameSpyGame->getSeed()));
+
+		if (TheNAT != NULL) {
+			delete TheNAT;
+			TheNAT = NULL;
+		}
+	}
+}

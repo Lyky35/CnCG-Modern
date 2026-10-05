@@ -37,7 +37,7 @@
 #include "Common/MultiplayerSettings.h"
 #include "Common/PlayerTemplate.h"
 #include "Common/CustomMatchPreferences.h"
-#include "Common/Version.h"
+#include "Common/version.h"
 #include "GameClient/AnimateWindowManager.h"
 #include "GameClient/WindowLayout.h"
 #include "GameClient/Gadget.h"
@@ -569,7 +569,8 @@ void PopulateLobbyPlayerListbox(void)
 		{
 			std::set<Int>::const_iterator indexIt;
 			Int *newIndices = NEW Int[indicesToSelect.size()];
-			for (i=0, indexIt = indicesToSelect.begin(); indexIt != indicesToSelect.end(); ++i, ++indexIt)
+			Int i = 0;
+			for (indexIt = indicesToSelect.begin(); indexIt != indicesToSelect.end(); ++i, ++indexIt)
 			{
 				newIndices[i] = *indexIt;
 				DEBUG_LOG(("Queueing up index %d to re-select\n", *indexIt));
@@ -639,7 +640,7 @@ void WOLLobbyMenuInit( WindowLayout *layout, void *userData )
 	comboLobbyGroupRoomsID = TheNameKeyGenerator->nameToKey(AsciiString("WOLCustomLobby.wnd:ComboBoxGroupRooms"));
 	comboLobbyGroupRooms = TheWindowManager->winGetWindowFromId(parent, comboLobbyGroupRoomsID);
 
-	GadgetTextEntrySetText(textEntryChat, UnicodeString.TheEmptyString);
+	GadgetTextEntrySetText(textEntryChat, UnicodeString::TheEmptyString);
 
 	populateGroupRoomListbox(comboLobbyGroupRooms);
 
@@ -1336,7 +1337,7 @@ WindowMsgHandledType WOLLobbyMenuInput( GameWindow *window, UnsignedInt msg,
 					// send a simulated selected event to the parent window of the
 					// back/exit button
 					//
-					if( BitTest( state, KEY_STATE_UP ) )
+					if( WWBitTest( state, KEY_STATE_UP ) )
 					{
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED, 
 																							(WindowMsgData)buttonBack, buttonBackID );
@@ -1592,7 +1593,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 									// no password - just join it
 									PeerRequest req;
 									req.peerRequestType = PeerRequest::PEERREQUEST_JOINSTAGINGROOM;
-									req.text = srmIt->second->getGameName().str();
+									req.text = srmIt->second->getGameName().toSTLString();
 									req.stagingRoom.id = selectedID;
 									req.password = "";
 									TheGameSpyPeerMessageQueue->addRequest(req);

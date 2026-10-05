@@ -9,3 +9,9 @@ set(CMAKE_FIND_ROOT_PATH /usr/x86_64-w64-mingw32)
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+
+# Local import libraries for DLLs MinGW-w64 does not package (d3d8, xaudio2)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L${CMAKE_CURRENT_LIST_DIR}/mingw-import-libs")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L${CMAKE_CURRENT_LIST_DIR}/mingw-import-libs")
+
+# msvcrt old-name imports (underscore-prefixed _tcs*) that MinGW's import libs omit

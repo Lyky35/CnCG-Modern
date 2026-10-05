@@ -23,6 +23,7 @@ public:
     VkSwapchainKHR GetSwapchain() const { return m_swapchain; }
     uint32_t GetGraphicsQueueFamily() const { return m_graphicsQueueFamily; }
     uint32_t GetSwapchainImageCount() const { return m_swapchainImageCount; }
+    VkImageView GetSwapchainImageView(uint32_t index) const { return m_swapchainImageViews[index]; }
     VkExtent2D GetSwapchainExtent() const { return m_swapchainExtent; }
     VkFormat GetSwapchainFormat() const { return m_swapchainFormat; }
 

@@ -13,7 +13,7 @@ layout(binding = 2) uniform LightUBO {
     vec3 lightDir;
     vec3 lightColor;
     vec3 ambientColor;
-} light;
+};
 
 void main() {
     vec4 texColor = texture(texSampler, inTexCoord);

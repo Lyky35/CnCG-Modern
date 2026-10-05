@@ -32,7 +32,7 @@
 
 #include "GameClient/InGameUI.h"
 
-enum GUICommandType;
+enum GUICommandType : int;
 
 //-----------------------------------------------------------------------------
 class CommandTranslator : public GameMessageTranslator
@@ -72,8 +72,7 @@ private:
 };
 
 
-enum FilterTypes
-{
+enum FilterTypes : int {
 	FT_NULL_FILTER=0,
 	// The following are screen filter shaders, that modify the rendered viewport after it is drawn.
 	FT_VIEW_BW_FILTER,		//filter to apply a black & white filter to the screen.
@@ -82,7 +81,7 @@ enum FilterTypes
 	FT_MAX
 };
 
-enum FilterModes
+enum FilterModes : int
 {
 	FM_NULL_MODE = 0,
 
@@ -115,7 +114,7 @@ enum FilterModes
 class PickAndPlayInfo
 {
 public:
-	PickAndPlayInfo::PickAndPlayInfo(); //INITIALIZE THE CONSTRUCTOR IN CPP
+	PickAndPlayInfo(); //INITIALIZE THE CONSTRUCTOR IN CPP
 
 	Bool						m_air;					//Are we attacking an airborned target?
 	Drawable				*m_drawTarget;	//Do we have an override draw target?

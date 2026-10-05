@@ -1,0 +1,212 @@
+// Auto-generated from MinGW d3d8.h vtable order - do not edit.
+// Include AFTER all bridge implementations in the same TU.
+
+// generic no-op stubs for not-yet-bridged methods
+DX8_STUB(dx8rb_GetAdapterMonitor)
+DX8_STUB(dx8dev_SetCursorProperties)
+DX8_STUB(dx8dev_GetFrontBuffer)
+DX8_STUB(dx8dev_SetClipPlane)
+DX8_STUB(dx8dev_GetClipPlane)
+DX8_STUB(dx8dev_BeginStateBlock)
+DX8_STUB(dx8dev_EndStateBlock)
+DX8_STUB(dx8dev_ApplyStateBlock)
+DX8_STUB(dx8dev_CaptureStateBlock)
+DX8_STUB(dx8dev_DeleteStateBlock)
+DX8_STUB(dx8dev_CreateStateBlock)
+DX8_STUB(dx8dev_SetClipStatus)
+DX8_STUB(dx8dev_GetClipStatus)
+DX8_STUB(dx8dev_SetPaletteEntries)
+DX8_STUB(dx8dev_GetPaletteEntries)
+DX8_STUB(dx8dev_SetCurrentTexturePalette)
+DX8_STUB(dx8dev_GetCurrentTexturePalette)
+DX8_STUB(dx8dev_GetVertexShaderConstant)
+DX8_STUB(dx8dev_GetVertexShaderDeclaration)
+DX8_STUB(dx8dev_GetVertexShaderFunction)
+DX8_STUB(dx8dev_GetPixelShaderFunction)
+DX8_STUB(dx8dev_DrawRectPatch)
+DX8_STUB(dx8dev_DrawTriPatch)
+DX8_STUB(dx8dev_DeletePatch)
+
+// vtables
+static void* const dx8vt_dx8rb[15] = {
+    (void*)dx8rb_QueryInterface,
+    (void*)dx8rb_AddRef,
+    (void*)dx8rb_Release,
+    (void*)dx8rb_GetAdapterCount,
+    (void*)dx8rb_GetAdapterIdentifier,
+    (void*)dx8rb_GetAdapterModeCount,
+    (void*)dx8rb_EnumAdapterModes,
+    (void*)dx8rb_GetAdapterDisplayMode,
+    (void*)dx8rb_CheckDeviceType,
+    (void*)dx8rb_CheckDeviceFormat,
+    (void*)dx8rb_CheckDeviceMultiSampleType,
+    (void*)dx8rb_CheckDepthStencilMatch,
+    (void*)dx8rb_GetDeviceCaps,
+    (void*)dx8rb_GetAdapterMonitor,
+    (void*)dx8rb_CreateDevice,
+};
+
+static void* const dx8vt_dx8dev[95] = {
+    (void*)dx8dev_QueryInterface,
+    (void*)dx8dev_AddRef,
+    (void*)dx8dev_Release,
+    (void*)dx8dev_GetAvailableTextureMem,
+    (void*)dx8dev_ResourceManagerDiscardBytes,
+    (void*)dx8dev_GetDirect3D,
+    (void*)dx8dev_GetDeviceCaps,
+    (void*)dx8dev_GetDisplayMode,
+    (void*)dx8dev_GetCreationParameters,
+    (void*)dx8dev_SetCursorProperties,
+    (void*)dx8dev_SetCursorPosition,
+    (void*)dx8dev_ShowCursor,
+    (void*)dx8dev_CreateAdditionalSwapChain,
+    (void*)dx8dev_Reset,
+    (void*)dx8dev_Present,
+    (void*)dx8dev_GetBackBuffer,
+    (void*)dx8dev_SetGammaRamp,
+    (void*)dx8dev_GetGammaRamp,
+    (void*)dx8dev_CreateTexture,
+    (void*)dx8dev_CreateVolumeTexture,
+    (void*)dx8dev_CreateCubeTexture,
+    (void*)dx8dev_CreateVertexBuffer,
+    (void*)dx8dev_CreateIndexBuffer,
+    (void*)dx8dev_CreateRenderTarget,
+    (void*)dx8dev_CreateDepthStencilSurface,
+    (void*)dx8dev_CreateImageSurface,
+    (void*)dx8dev_CopyRects,
+    (void*)dx8dev_UpdateTexture,
+    (void*)dx8dev_GetFrontBuffer,
+    (void*)dx8dev_SetRenderTarget,
+    (void*)dx8dev_GetRenderTarget,
+    (void*)dx8dev_GetDepthStencilSurface,
+    (void*)dx8dev_BeginScene,
+    (void*)dx8dev_EndScene,
+    (void*)dx8dev_Clear,
+    (void*)dx8dev_SetTransform,
+    (void*)dx8dev_GetTransform,
+    (void*)dx8dev_MultiplyTransform,
+    (void*)dx8dev_SetViewport,
+    (void*)dx8dev_GetViewport,
+    (void*)dx8dev_SetMaterial,
+    (void*)dx8dev_GetMaterial,
+    (void*)dx8dev_SetLight,
+    (void*)dx8dev_GetLight,
+    (void*)dx8dev_LightEnable,
+    (void*)dx8dev_GetLightEnable,
+    (void*)dx8dev_SetClipPlane,
+    (void*)dx8dev_GetClipPlane,
+    (void*)dx8dev_SetRenderState,
+    (void*)dx8dev_GetRenderState,
+    (void*)dx8dev_BeginStateBlock,
+    (void*)dx8dev_EndStateBlock,
+    (void*)dx8dev_ApplyStateBlock,
+    (void*)dx8dev_CaptureStateBlock,
+    (void*)dx8dev_DeleteStateBlock,
+    (void*)dx8dev_CreateStateBlock,
+    (void*)dx8dev_SetClipStatus,
+    (void*)dx8dev_GetClipStatus,
+    (void*)dx8dev_GetTexture,
+    (void*)dx8dev_SetTexture,
+    (void*)dx8dev_GetTextureStageState,
+    (void*)dx8dev_SetTextureStageState,
+    (void*)dx8dev_ValidateDevice,
+    (void*)dx8dev_GetInfo,
+    (void*)dx8dev_SetPaletteEntries,
+    (void*)dx8dev_GetPaletteEntries,
+    (void*)dx8dev_SetCurrentTexturePalette,
+    (void*)dx8dev_GetCurrentTexturePalette,
+    (void*)dx8dev_DrawPrimitive,
+    (void*)dx8dev_DrawIndexedPrimitive,
+    (void*)dx8dev_DrawPrimitiveUP,
+    (void*)dx8dev_DrawIndexedPrimitiveUP,
+    (void*)dx8dev_ProcessVertices,
+    (void*)dx8dev_CreateVertexShader,
+    (void*)dx8dev_SetVertexShader,
+    (void*)dx8dev_GetVertexShader,
+    (void*)dx8dev_DeleteVertexShader,
+    (void*)dx8dev_SetVertexShaderConstant,
+    (void*)dx8dev_GetVertexShaderConstant,
+    (void*)dx8dev_GetVertexShaderDeclaration,
+    (void*)dx8dev_GetVertexShaderFunction,
+    (void*)dx8dev_SetStreamSource,
+    (void*)dx8dev_GetStreamSource,
+    (void*)dx8dev_SetIndices,
+    (void*)dx8dev_GetIndices,
+    (void*)dx8dev_CreatePixelShader,
+    (void*)dx8dev_SetPixelShader,
+    (void*)dx8dev_GetPixelShader,
+    (void*)dx8dev_DeletePixelShader,
+    (void*)dx8dev_SetPixelShaderConstant,
+    (void*)dx8dev_GetPixelShaderConstant,
+    (void*)dx8dev_GetPixelShaderFunction,
+    (void*)dx8dev_DrawRectPatch,
+    (void*)dx8dev_DrawTriPatch,
+    (void*)dx8dev_DeletePatch,
+};
+
+static void* const dx8vt_dx8vb[13] = {
+    (void*)dx8vb_QueryInterface,
+    (void*)dx8vb_AddRef,
+    (void*)dx8vb_Release,
+    (void*)dx8vb_GetDevice,
+    (void*)dx8vb_SetPrivateData,
+    (void*)dx8vb_GetPrivateData,
+    (void*)dx8vb_SetPriority,
+    (void*)dx8vb_GetPriority,
+    (void*)dx8vb_PreLoad,
+    (void*)dx8vb_GetType,
+    (void*)dx8vb_Lock,
+    (void*)dx8vb_Unlock,
+    (void*)dx8vb_GetDesc,
+};
+
+static void* const dx8vt_dx8ib[13] = {
+    (void*)dx8ib_QueryInterface,
+    (void*)dx8ib_AddRef,
+    (void*)dx8ib_Release,
+    (void*)dx8ib_GetDevice,
+    (void*)dx8ib_SetPrivateData,
+    (void*)dx8ib_GetPrivateData,
+    (void*)dx8ib_SetPriority,
+    (void*)dx8ib_GetPriority,
+    (void*)dx8ib_PreLoad,
+    (void*)dx8ib_GetType,
+    (void*)dx8ib_Lock,
+    (void*)dx8ib_Unlock,
+    (void*)dx8ib_GetDesc,
+};
+
+static void* const dx8vt_dx8tx[18] = {
+    (void*)dx8tx_QueryInterface,
+    (void*)dx8tx_AddRef,
+    (void*)dx8tx_Release,
+    (void*)dx8tx_GetDevice,
+    (void*)dx8tx_SetPrivateData,
+    (void*)dx8tx_GetPrivateData,
+    (void*)dx8tx_SetPriority,
+    (void*)dx8tx_GetPriority,
+    (void*)dx8tx_PreLoad,
+    (void*)dx8tx_GetType,
+    (void*)dx8tx_SetLOD,
+    (void*)dx8tx_GetLOD,
+    (void*)dx8tx_GetLevelCount,
+    (void*)dx8tx_GetLevelDesc,
+    (void*)dx8tx_GetSurfaceLevel,
+    (void*)dx8tx_LockRect,
+    (void*)dx8tx_UnlockRect,
+    (void*)dx8tx_AddDirtyRect,
+};
+
+static void* const dx8vt_dx8sf[11] = {
+    (void*)dx8sf_QueryInterface,
+    (void*)dx8sf_AddRef,
+    (void*)dx8sf_Release,
+    (void*)dx8sf_GetDevice,
+    (void*)dx8sf_SetPrivateData,
+    (void*)dx8sf_GetPrivateData,
+    (void*)dx8sf_FreePrivateData,
+    (void*)dx8sf_GetContainer,
+    (void*)dx8sf_GetDesc,
+    (void*)dx8sf_LockRect,
+    (void*)dx8sf_UnlockRect,
+};

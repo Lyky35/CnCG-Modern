@@ -38,7 +38,7 @@
 #include "verchk.h"
 #include <windows.h>
 #include <winnt.h>
-#include "rawfile.h"
+#include "RAWFILE.H"
 #include "ffactory.h"
 
 
@@ -117,7 +117,7 @@ bool GetFileCreationTime(char* filename, FILETIME* createTime)
 
 		if (file && file->Open())
 			{
-			HANDLE handle = file->Get_File_Handle();
+			HANDLE handle = reinterpret_cast<HANDLE>(file->Get_File_Handle());
 
 			if (handle != INVALID_HANDLE_VALUE)
 				{

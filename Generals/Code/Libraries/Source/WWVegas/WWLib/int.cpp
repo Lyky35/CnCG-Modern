@@ -35,14 +35,14 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include	"always.h"
-#include	"int.h"
-#include	"mpmath.h"
+#include	"INT.H"
+#include	"MPMATH.H"
 #include	"rng.h"
 
-int bignum::Error = 0;
-bool bignum::Carry = false;
-bool bignum::Borrow = false;
-bignum bignum::Remainder;
+template<> int Int<64>::Error = 0;
+template<> bool Int<64>::Carry = false;
+template<> bool Int<64>::Borrow = false;
+template<> Int<64> Int<64>::Remainder = Int<64>();
 
 
 

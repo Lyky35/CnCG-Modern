@@ -33,7 +33,7 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "stdio.h"
 #include "W3DDevice/GameClient/W3DWater.h"
-#include "W3DDevice/GameClient/heightmap.h"
+#include "W3DDevice/GameClient/HeightMap.h"
 #include "W3DDevice/GameClient/W3DShroud.h"
 #include "W3DDevice/GameClient/W3DWaterTracks.h"
 #include "W3DDevice/GameClient/W3DAssetManager.h"
@@ -256,7 +256,7 @@ void WaterRenderObjClass::setupJbaWaterShader(void)
 	m_pDev->SetTextureStageState( 3, D3DTSS_MINFILTER, D3DTEXF_LINEAR );
 	m_pDev->SetTextureStageState( 3, D3DTSS_MAGFILTER, D3DTEXF_LINEAR );
 	if (m_riverWaterPixelShader){
-		DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(0,   D3DXVECTOR4(REFLECTION_FACTOR, REFLECTION_FACTOR, REFLECTION_FACTOR, 1.0f), 1);
+		{ D3DXVECTOR4 v4const = D3DXVECTOR4(REFLECTION_FACTOR, REFLECTION_FACTOR, REFLECTION_FACTOR, 1.0f); DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(0, (const void*)&v4const, 1); };
 		DX8Wrapper::_Get_D3D_Device8()->SetPixelShader(m_riverWaterPixelShader);
 	}
 }
@@ -1223,7 +1223,7 @@ void WaterRenderObjClass::update( void )
 				{
 
 					// only pay attention to mesh points that are in motion
-					if( BitTest( pData->status, WaterRenderObjClass::IN_MOTION ) )
+					if( WWBitTest( pData->status, WaterRenderObjClass::IN_MOTION ) )
 					{
 
 						// DAMPENING to slow the changes down
@@ -1841,8 +1841,8 @@ void WaterRenderObjClass::drawSea(RenderInfoClass & rinfo)
 	m_pDev->SetVertexShaderConstant(CV_TEXPROJ_0, &mat, 4);
 
 	// Setup constants
-	m_pDev->SetVertexShaderConstant(CV_ZERO,   D3DXVECTOR4(0.0f, 0.0f, 0.0f, 0.0f), 1);
-	m_pDev->SetVertexShaderConstant(CV_ONE,    D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f), 1);
+	{ D3DXVECTOR4 v4const = D3DXVECTOR4(0.0f, 0.0f, 0.0f, 0.0f); m_pDev->SetVertexShaderConstant(CV_ZERO, (const void*)&v4const, 1); }
+	{ D3DXVECTOR4 v4const = D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f); m_pDev->SetVertexShaderConstant(CV_ONE, (const void*)&v4const, 1); }
 
 	m_pDev->SetVertexShader(m_dwWaveVertexShader);
 	m_pDev->SetPixelShader(m_dwWavePixelShader);
@@ -2945,7 +2945,7 @@ void WaterRenderObjClass::setupFlatWaterShader(void)
 	m_pDev->SetTextureStageState( 2, D3DTSS_MINFILTER, D3DTEXF_LINEAR );
 	m_pDev->SetTextureStageState( 2, D3DTSS_MAGFILTER, D3DTEXF_LINEAR );
 	if (m_trapezoidWaterPixelShader){
-		DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(0,   D3DXVECTOR4(REFLECTION_FACTOR, REFLECTION_FACTOR, REFLECTION_FACTOR, 1.0f), 1);
+		{ D3DXVECTOR4 v4const = D3DXVECTOR4(REFLECTION_FACTOR, REFLECTION_FACTOR, REFLECTION_FACTOR, 1.0f); DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(0, (const void*)&v4const, 1); };
 		DX8Wrapper::_Get_D3D_Device8()->SetPixelShader(m_trapezoidWaterPixelShader);
 	}
 }

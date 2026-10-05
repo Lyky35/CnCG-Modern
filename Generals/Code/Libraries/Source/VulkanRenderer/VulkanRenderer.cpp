@@ -99,7 +99,7 @@ bool VulkanRenderer::CreateFramebuffers()
     m_framebuffers.resize(imageCount);
 
     for (uint32_t i = 0; i < imageCount; i++) {
-        VkImageView attachments[] = { m_device.m_swapchainImageViews[i] };
+        VkImageView attachments[] = { m_device.GetSwapchainImageView(i) };
 
         VkFramebufferCreateInfo framebufferInfo = {};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -241,6 +241,7 @@ void VulkanRenderer::SetTexture(uint32_t slot, VulkanTexture* texture)
 
 void VulkanRenderer::SetPipeline(VulkanPipeline* pipeline)
 {
+    m_pipeline = pipeline;
     if (!m_currentCmd || !pipeline) return;
 
     vkCmdBindPipeline(m_currentCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetPipeline());

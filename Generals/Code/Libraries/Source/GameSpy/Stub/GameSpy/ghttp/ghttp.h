@@ -5,6 +5,14 @@
 typedef void* GHTTPRequest;
 typedef int GHTTPBool;
 typedef int GHTTPState;
+typedef int GHTTPResult;
+
+#define GHTTPSuccess 0
+#define GHTTPErrorNetwork 1
+#define GHTTPErrorUnknown 2
+#define GHTTPErrorNotModified 3
+#define GHTTPErrorNotFound 4
+#define GHTTPErrorTimeout 5
 
 #define GHTTPTrue 1
 #define GHTTPFalse 0

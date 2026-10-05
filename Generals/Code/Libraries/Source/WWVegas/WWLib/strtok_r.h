@@ -44,7 +44,10 @@
 #ifndef __STRTOK_R_H__
 #define __STRTOK_R_H__
 
-#ifndef _UNIX
+#if defined(__MINGW32__)
+// MinGW-w64 provides a real strtok_r (declared with C linkage in <string.h>).
+#include <string.h>
+#elif !defined(_UNIX)
 char *strtok_r(char *strptr, const char *delimiters, char **lasts);
 #endif
 
