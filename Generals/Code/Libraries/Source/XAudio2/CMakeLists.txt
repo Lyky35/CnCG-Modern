@@ -6,6 +6,5 @@ target_include_directories(XAudio2 PUBLIC
     ${GAME_CODE_DIR}/GameEngine/Include
 )
 
-if(WIN32)
-    target_link_libraries(XAudio2 PUBLIC xaudio2)
-endif()
+# XAudio2 is loaded dynamically at runtime (XAudio2Engine.cpp) so the exe does not
+# depend on any particular xaudio2[_N].dll being present at link time.

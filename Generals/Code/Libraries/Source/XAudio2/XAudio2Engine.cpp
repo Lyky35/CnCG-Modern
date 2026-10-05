@@ -66,13 +66,43 @@ XAudio2Engine::~XAudio2Engine()
 ///////////////////////////////////////////////////////////////////////////////
 // Initialize
 ///////////////////////////////////////////////////////////////////////////////
+// The xaudio2 import name differs per Windows version; resolve XAudio2Create at
+// runtime instead of linking against any specific xaudio2_N.dll.
+typedef HRESULT (WINAPI *XAudio2CreatePFN)(IXAudio2**, unsigned int, unsigned int);
+
+static XAudio2CreatePFN ResolveXAudio2Create()
+{
+	static XAudio2CreatePFN resolved = NULL;
+	static bool tried = false;
+	if (tried) return resolved;
+	tried = true;
+	static const char* candidates[] = {
+		"xaudio2_9.dll", "xaudio2_8.dll", "xaudio2_7.dll", "xaudio2.dll",
+		"xaudio2_6.dll", "xaudio2_5.dll", "xaudio2_4.dll", "xaudio2_3.dll",
+		"xaudio2_2.dll", "xaudio2_1.dll"
+	};
+	for (size_t i = 0; i < sizeof(candidates)/sizeof(candidates[0]); ++i) {
+		HMODULE mod = LoadLibraryA(candidates[i]);
+		if (!mod) continue;
+		resolved = (XAudio2CreatePFN)GetProcAddress(mod, "XAudio2Create");
+		if (resolved) break;
+	}
+	return resolved;
+}
+
 bool XAudio2Engine::Initialize()
 {
 	if (m_xaudio2) {
 		return true;
 	}
 
-	HRESULT hr = XAudio2Create(&m_xaudio2, 0, XAUDIO2_DEFAULT_PROCESSOR);
+	XAudio2CreatePFN createFn = ResolveXAudio2Create();
+	if (!createFn) {
+		// No XAudio2 runtime available on this system: start without audio.
+		return false;
+	}
+
+	HRESULT hr = createFn(&m_xaudio2, 0, XAUDIO2_DEFAULT_PROCESSOR);
 	if (FAILED(hr)) {
 		return false;
 	}
