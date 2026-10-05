@@ -100,34 +100,46 @@ static LONG WINAPI CrashDiagHandler(PEXCEPTION_POINTERS ep)
 		(unsigned long long)c->R8, (unsigned long long)c->R9,
 		(unsigned long long)c->R10, (unsigned long long)c->R11);
 
-	// RBP-chain walk. Heuristic: stop when the frame pointer stops ascending.
-	ULONG64 rbp = c->Rbp;
-	for (int i = 0; i < 80; ++i) {
-		if (rbp & 7) break;
-		if (!IsReadable(rbp, 16)) break;
-		ULONG64 nextRbp = *(ULONG64*)rbp;
-		ULONG64 retAddr = *(ULONG64*)(rbp + 8);
-		if (nextRbp <= rbp) break;
-		LogFrame(f, "  frame", retAddr);
-		rbp = nextRbp;
-	}
-
-	// Fallback: scrape the raw stack for anything that looks like a return
-	// address inside RTS.exe -- works even without frame pointers.
-	fprintf(f, "  stack scrape (RTS.exe code addresses only):\n");
-	ULONG64 sp = c->Rsp;
-	ULONG64 prev = 0;
-	int printed = 0;
-	for (ULONG64 a = sp; a < sp + 0x4000 && printed < 48; a += 8) {
-		if (!IsReadable(a, 8)) break;
-		ULONG64 v = *(ULONG64*)a;
-		if (v > g_imageBase + 0x1000 && v < g_imageBase + g_imageSize && v != prev) {
-			LogFrame(f, "    *", v);
-			prev = v;
-			++printed;
+	// Proper unwind via ntdll RtlVirtualUnwind (works across system modules).
+	typedef PVOID (WINAPI *RtlWalkFrameChain_t)(PVOID*, ULONG, ULONG);
+	RtlWalkFrameChain_t walk = (RtlWalkFrameChain_t)
+		GetProcAddress(GetModuleHandleA("ntdll.dll"), "RtlWalkFrameChain");
+	BOOL unwound = FALSE;
+	if (walk) {
+		PVOID chain[64];
+		// Flags bit1 = "call frames" from current context (works in exception context)
+		ULONG n = walk(chain, 64, 1);
+		if (n > 0) {
+			unwound = TRUE;
+			for (ULONG i = 0; i < n; ++i) LogFrame(f, "  frame", (ULONG64)chain[i]);
 		}
 	}
-
+	if (!unwound) {
+		// RBP-chain fallback.
+		ULONG64 rbp = c->Rbp;
+		for (int i = 0; i < 80; ++i) {
+			if (rbp & 7) break;
+			if (!IsReadable(rbp, 16)) break;
+			ULONG64 nextRbp = *(ULONG64*)rbp;
+			ULONG64 retAddr = *(ULONG64*)(rbp + 8);
+			if (nextRbp <= rbp) break;
+			LogFrame(f, "  frame", retAddr);
+			rbp = nextRbp;
+		}
+		fprintf(f, "  stack scrape (RTS.exe code addresses only):\n");
+		ULONG64 sp = c->Rsp;
+		ULONG64 prev = 0;
+		int printed = 0;
+		for (ULONG64 a = sp; a < sp + 0x4000 && printed < 48; a += 8) {
+			if (!IsReadable(a, 8)) break;
+			ULONG64 v = *(ULONG64*)a;
+			if (v > g_imageBase + 0x1000 && v < g_imageBase + g_imageSize && v != prev) {
+				LogFrame(f, "    *", v);
+				prev = v;
+				++printed;
+			}
+		}
+	}
 	fflush(f);
 	fclose(f);
 	return EXCEPTION_EXECUTE_HANDLER;
