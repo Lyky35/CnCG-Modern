@@ -35,6 +35,15 @@ if(Vulkan_FOUND)
     # GLSL strings when VULKAN_GENERATED_SHADERS is defined.
     find_program(GLSLC_EXECUTABLE NAMES glslc glslangValidator
         DOC "Vulkan GLSL-to-SPIRV compiler")
+    # Older distro glslangValidator lacks --target-env; use -V there.
+    if(GLSLC_EXECUTABLE)
+        get_filename_component(_glslc_name "${GLSLC_EXECUTABLE}" NAME)
+        if(_glslc_name STREQUAL "glslangValidator")
+            set(GLSLC_FLAGS -V)
+        else()
+            set(GLSLC_FLAGS --target-env=vulkan1.0)
+        endif()
+    endif()
     set(_shader_map
         ui_vert|ui.vert
         ui_frag|ui.frag
@@ -64,7 +73,7 @@ if(Vulkan_FOUND)
             set(_spv ${_gen_dir}/${_var}.spv)
             set(_hdr ${_gen_dir}/${_var}_spv.h)
             add_custom_command(OUTPUT ${_hdr}
-                COMMAND ${GLSLC_EXECUTABLE} --target-env=vulkan1.0 -o ${_spv} ${_glsl}
+                COMMAND ${GLSLC_EXECUTABLE} ${GLSLC_FLAGS} -o ${_spv} ${_glsl}
                 COMMAND ${CMAKE_COMMAND}
                     -DSRC=${_spv} -DSRC_NAME=${_file} -DVAR=${_var}_spv -DOUT=${_hdr}
                     -P ${CMAKE_SOURCE_DIR}/cmake/SpvToHeader.cmake
