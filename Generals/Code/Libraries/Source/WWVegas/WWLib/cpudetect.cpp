@@ -1278,7 +1278,9 @@ void Get_OS_Info(
 		break;
 	case VER_PLATFORM_WIN32_NT:
 //		os_info.SubCode.Format("%d",build_sub);
+		os_info.Code="UNKNOWN";
 		os_info.SubCode="UNKNOWN";
+		os_info.VersionString="UNKNOWN";
 		if (OSVersionNumberMajor==4) {
 			os_info.Code="WINNT";
 			return;
@@ -1295,5 +1297,13 @@ void Get_OS_Info(
 			os_info.Code="WINXX";
 			return;
 		}
+		// Windows Vista (6.0) and later (fixes uninitialized os_info on modern OS).
+		os_info.Code="WINNT";
+		os_info.VersionMajor=(unsigned char)OSVersionNumberMajor;
+		os_info.VersionMinor=(unsigned char)OSVersionNumberMinor;
+		os_info.BuildMajor=(unsigned char)build_major;
+		os_info.BuildMinor=(unsigned char)build_minor;
+		os_info.BuildSub=(unsigned short)build_sub;
+		return;
 	}
 }
