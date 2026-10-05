@@ -139,7 +139,7 @@ StringClass::Resize (int new_len)
 		// string.
 		//
 		TCHAR *new_buffer = Allocate_Buffer (new_len);
-		_tcscpy (new_buffer, m_Buffer);
+		strcpy (new_buffer, m_Buffer);
 
 		//
 		//	Switch to the new buffer

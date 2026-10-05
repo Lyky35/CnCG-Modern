@@ -24,7 +24,6 @@ target_link_libraries(RTS
 
 if(MINGW)
     target_link_libraries(RTS
-        "${CMAKE_SOURCE_DIR}/cmake/mingw-import-libs/libtcsoldnames.a"
     )
 endif()
 
