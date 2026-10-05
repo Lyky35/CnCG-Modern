@@ -5,6 +5,7 @@
 // static initialization are captured too.
 
 #include <windows.h>
+#include <tlhelp32.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -55,9 +56,25 @@ static void LogFrame(FILE* f, const char* tag, ULONG64 addr)
 {
 	if (addr >= g_imageBase && addr < g_imageBase + g_imageSize) {
 		fprintf(f, "%s RTS.exe+0x%llx\n", tag, (unsigned long long)(addr - g_imageBase));
-	} else {
-		fprintf(f, "%s 0x%llx\n", tag, (unsigned long long)addr);
+		return;
 	}
+	// attribute to a loaded module if we can identify one
+	HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetCurrentProcessId());
+	if (snap != INVALID_HANDLE_VALUE) {
+		MODULEENTRY32 me; me.dwSize = sizeof(me);
+		if (Module32First(snap, &me)) {
+			do {
+				ULONG64 b = (ULONG64)me.modBaseAddr;
+				if (addr >= b && addr < b + me.modBaseSize) {
+					fprintf(f, "%s %s+0x%lx\n", tag, me.szModule, (unsigned long)(addr - b));
+					CloseHandle(snap);
+					return;
+				}
+			} while (Module32Next(snap, &me));
+		}
+		CloseHandle(snap);
+	}
+	fprintf(f, "%s 0x%llx\n", tag, (unsigned long long)addr);
 }
 
 static LONG WINAPI CrashDiagHandler(PEXCEPTION_POINTERS ep)

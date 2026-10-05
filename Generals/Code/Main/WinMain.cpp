@@ -911,8 +911,9 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	checkProtection();
 
 	try {
-
+		CrashDiagMarker("after dpi+protection");
 		_set_se_translator( DumpExceptionInfo ); // Hook that allows stack trace.
+		CrashDiagMarker("after se translator");
 		//
 		// there is something about checkin in and out the .dsp and .dsw files 
 		// that blows the working directory information away on each of the 
@@ -941,6 +942,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			pEnd--;
 		}
 		::SetCurrentDirectory(buffer);
+		CrashDiagMarker("after setcwd");
 
 
 		/*
@@ -996,6 +998,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
  		gLoadScreenBitmap = (HBITMAP)LoadImage(hInstance, "Install_Final.bmp",	IMAGE_BITMAP, 0, 0, LR_SHARED|LR_LOADFROMFILE);
 
 		// register windows class and create application window
+		CrashDiagMarker("before app windows");
 		if( initializeAppWindows( hInstance, nCmdShow, ApplicationIsWindowed) == false )
 			return 0;
 
