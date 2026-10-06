@@ -109,6 +109,8 @@ static void LogFrame(HANDLE h, const char* tag, ULONG64 addr)
 }
 
 static void DumpModules(HANDLE h);
+static void DumpTailOf(HANDLE, const char*, const char*);
+static void DumpEngineLogs(HANDLE);
 static void CrashDiagUnwindAndScrape(HANDLE h, CONTEXT* c);
 
 static LONG WINAPI CrashDiagHandler(PEXCEPTION_POINTERS ep)
@@ -156,7 +158,15 @@ static LONG WINAPI CrashDiagHandler(PEXCEPTION_POINTERS ep)
 	WriteStr(h, "  r9="); WriteHexU(h, c->R9);
 
 	CrashDiagUnwindAndScrape(h, c);
+	// For RIP==0 (call through null pointer) the return address sits at [rsp].
+	if (c->Rip == 0) {
+		WriteStr(h, "  null-call return candidates at [rsp]:\n");
+		for (int i = 0; i < 4; ++i)
+			if (IsReadable(c->Rsp + i*8, 8))
+				LogFrame(h, "    [rsp+0x8*i]", *(ULONG64*)(c->Rsp + i*8));
+	}
 	DumpModules(h);
+	DumpEngineLogs(h);
 	CloseHandle(h);
 	return EXCEPTION_EXECUTE_HANDLER;
 }
@@ -179,6 +189,32 @@ static LONG WINAPI CrashDiagUef(_EXCEPTION_POINTERS* ep)
 
 #include <stdlib.h>
 #include <malloc.h>
+
+static void DumpTailOf(HANDLE h, const char* path, const char* label)
+{
+	HANDLE f = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (f == INVALID_HANDLE_VALUE) return;
+	DWORD size = GetFileSize(f, NULL);
+	if (size == 0 || size == 0xFFFFFFFF) { CloseHandle(f); return; }
+	DWORD want = size < 6000 ? size : 6000;
+	SetFilePointer(f, (LONG)(size - want), NULL, FILE_BEGIN);
+	char buf[6200]; DWORD got = 0;
+	ReadFile(f, buf, want, &got, NULL);
+	buf[got] = 0;
+	CloseHandle(f);
+	WriteStr(h, "  --- tail of "); WriteStr(h, label); WriteStr(h, " ---\n");
+	// write as-is; strip nothing
+	DWORD wr; WriteFile(h, buf, got, &wr, NULL);
+	if (buf[got-1] != '\n') WriteStr(h, "\n");
+	WriteStr(h, "  --- end "); WriteStr(h, label); WriteStr(h, " ---\n");
+}
+
+static void DumpEngineLogs(HANDLE h)
+{
+	DumpTailOf(h, "DebugLogFile.txt", "DebugLogFile.txt");
+	DumpTailOf(h, "dx8vk.log", "dx8vk.log");
+}
 
 static void DumpModules(HANDLE h)
 {
@@ -250,6 +286,7 @@ static void CrashDiagTerminateHandler()
 		CONTEXT c; RtlCaptureContext(&c);
 		CrashDiagUnwindAndScrape(h, &c);
 		DumpModules(h);
+		DumpEngineLogs(h);
 		CloseHandle(h);
 	}
 	abort();
@@ -262,6 +299,7 @@ static void __cdecl CrashDiagSignalHandler(int sig)
 		char line[64];
 		wsprintfA(line, "=== FATAL SIGNAL %d ===\n", sig);
 		WriteStr(h, line);
+		DumpEngineLogs(h);
 		CloseHandle(h);
 	}
 	_exit(0x2000 + sig);
