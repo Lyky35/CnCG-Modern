@@ -46,6 +46,8 @@ static HANDLE OpenLogRaw(void)
 	return h;
 }
 
+void CrashDiagMarker(const char* msg);
+
 static void WriteStr(HANDLE h, const char* s0)
 {
 	DWORD wr;
@@ -56,9 +58,10 @@ static void WriteHexU(HANDLE h, ULONG64 v)
 {
 	char buf[20];
 	static const char* hx = "0123456789abcdef";
-	int i = 16;
 	buf[0] = '0'; buf[1] = 'x';
-	for (int b = 60; b >= 0; b -= 4, --i) buf[i] = hx[(v >> b) & 0xf];
+	int i = 2;
+	for (int b = 60; b >= 0; b -= 4) buf[i++] = hx[(v >> b) & 0xf];
+	while (i > 3 && buf[i-1] == '0' && buf[2] != '0' ) { } /* keep fixed width, simpler */
 	buf[18] = '\n'; buf[19] = 0;
 	WriteStr(h, buf);
 }
@@ -181,11 +184,34 @@ static LONG WINAPI CrashDiagHandler(PEXCEPTION_POINTERS ep)
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 
+static void __cdecl CrashDiagInvalidParam(const wchar_t*, const wchar_t*, const wchar_t*,
+                                          unsigned, uintptr_t)
+{
+	HANDLE h = OpenLogRaw();
+	if (h != INVALID_HANDLE_VALUE) { WriteStr(h, "UCRT INVALID PARAMETER (would-be silent abort)\n"); CloseHandle(h); }
+	// do not return: ucrt would abort anyway; make it a clean recorded stop
+	ExitProcess(0x1234);
+}
+
+static LONG WINAPI CrashDiagUef(_EXCEPTION_POINTERS* ep)
+{
+	HANDLE h = OpenLogRaw();
+	if (h != INVALID_HANDLE_VALUE) { WriteStr(h, "UNHANDLED EXCEPTION FILTER reached\n"); CloseHandle(h); }
+	return EXCEPTION_EXECUTE_HANDLER;
+}
+
+#include <stdlib.h>
+#include <malloc.h>
+
 __attribute__((constructor(101)))
 static void CrashDiagCtor(void)
 {
 	CrashDiagInit();
 	AddVectoredExceptionHandler(1, CrashDiagHandler);
+	_set_invalid_parameter_handler(CrashDiagInvalidParam);
+	atexit([]() { CrashDiagMarker("atexit: process exiting normally"); });
+	SetUnhandledExceptionFilter(CrashDiagUef);
+	_set_abort_behavior(0, _WRITE_ABORT_MSG);
 	HANDLE h = OpenLogRaw();
 	if (h != INVALID_HANDLE_VALUE) {
 		SYSTEMTIME st;

@@ -690,7 +690,9 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message,
 
 }  // end WndProc
 
-// initializeAppWindows =======================================================
+extern void CrashDiagMarker(const char* msg);
+
+// initializeAppWindows ======================================================
 /** Register windows class and create application windows. */
 //=============================================================================
 static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWindowed )
@@ -706,7 +708,9 @@ static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWin
                        NULL/*LoadCursor(NULL, IDC_ARROW)*/, 
                        (HBRUSH)GetStockObject(BLACK_BRUSH), NULL,
 	                     TEXT("Game Window") };
+  CrashDiagMarker("appwin: before RegisterClass");
   RegisterClass( &wndClass );
+  CrashDiagMarker("appwin: after RegisterClass");
 
    // Create our main window
 	windowStyle =  WS_POPUP|WS_VISIBLE;
@@ -729,6 +733,7 @@ static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWin
 
 	gInitializing = true;
 
+  CrashDiagMarker("appwin: before CreateWindow");
   HWND hWnd = CreateWindow( TEXT("Game Window"),
                             TEXT("Command and Conquer Generals"),
                             windowStyle, 
@@ -747,6 +752,7 @@ static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWin
 														0L );
 
 
+	CrashDiagMarker("appwin: after CreateWindow");
 	if (!runWindowed)
 	{	SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0,SWP_NOSIZE |SWP_NOMOVE);
 	}
@@ -759,6 +765,7 @@ static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWin
 	ShowWindow( hWnd, nCmdShow );
 	UpdateWindow( hWnd );
 
+	CrashDiagMarker("appwin: done");
 	// save our application instance and window handle for future use
 	ApplicationHInstance = hInstance;
 	ApplicationHWnd = hWnd;
@@ -894,8 +901,6 @@ char *nextParam(char *newSource, char *seps)
 
 	return first;
 }
-
-extern void CrashDiagMarker(const char* msg);
 
 // Necessary to allow memory managers and such to have useful critical sections
 static CriticalSection critSec1, critSec2, critSec3, critSec4, critSec5;
