@@ -37,6 +37,13 @@ if(MSVC)
     add_compile_options(/W3 /permissive- /Zc:__cplusplus /Zc:externConstexpr /Zc:throwingNew)
 else()
     add_compile_options(-Wall -Wextra -fpermissive -Wno-narrowing)
+    if(MINGW)
+        # The game replaces the global unsized operator new/delete only.
+        # Sized deallocation (C++14 default in g++) would route 'delete' through
+        # libstdc++-6.dll's sized operator -> free() on pool pointers -> silent
+        # ucrt abort. Emit unsized delete calls everywhere instead.
+        add_compile_options(-fno-sized-deallocation)
+    endif()
 endif()
 
 set(GAME_CODE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Generals/Code)
