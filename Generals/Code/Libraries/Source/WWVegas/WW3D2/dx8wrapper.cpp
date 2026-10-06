@@ -252,6 +252,7 @@ bool DX8Wrapper::Init(void * hwnd)
 #if defined(VULKAN_DX8_BRIDGE)
 	// DX8 runtime fully replaced by the Vulkan device bridge (DX8Bridge/dx8vk.cpp).
 	D3DInterface = DX8Vk_CreateD3D8();
+	WWDEBUG_SAY(("DX8Vk: CreateD3D8 -> %p\n", D3DInterface));
 	if (!D3DInterface) {
 		WWDEBUG_SAY(("DX8Vk: failed to create Vulkan bridge\n"));
 		return false;
@@ -549,11 +550,14 @@ void DX8Wrapper::Enumerate_Devices()
 	DX8_Assert();
 
 	int adapter_count = D3DInterface->GetAdapterCount();
+	WWDEBUG_SAY(("DX8Vk: Enumerate_Devices adapter_count=%d
+", adapter_count));
 	for (int adapter_index=0; adapter_index<adapter_count; adapter_index++) {
 		
 		D3DADAPTER_IDENTIFIER8 id;
 		::ZeroMemory(&id, sizeof(D3DADAPTER_IDENTIFIER8));
 		HRESULT res = D3DInterface->GetAdapterIdentifier(adapter_index,D3DENUM_NO_WHQL_LEVEL,&id);
+		WWDEBUG_SAY(("DX8Vk: GetAdapterIdentifier(%d) -> 0x%08X\n", adapter_index, (unsigned)res));
 
 		if (res == D3D_OK) {
 
@@ -617,6 +621,9 @@ void DX8Wrapper::Enumerate_Devices()
 			** Add the render device to our table
 			*/
 			_RenderDeviceDescriptionTable.Add(desc);
+			WWDEBUG_SAY(("DX8Vk: adapter %d added; name_count=%d desc_count=%d
+",
+				adapter_index, _RenderDeviceNameTable.Count(), _RenderDeviceDescriptionTable.Count()));
 		}
 	}
 }
@@ -738,6 +745,11 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 	if (windowed != -1)	IsWindowed = (windowed != 0);
 	DX8Wrapper_IsWindowed = IsWindowed;
 
+	if (_RenderDeviceNameTable.Count() == 0 || _RenderDeviceDescriptionTable.Count() <= CurRenderDevice) {
+		WWDEBUG_SAY(("Attempting Set_Render_Device: EMPTY DEVICE TABLE (name_count=%d desc_count=%d cur=%d)\n",
+			_RenderDeviceNameTable.Count(), _RenderDeviceDescriptionTable.Count(), CurRenderDevice));
+		return false;
+	}
 	WWDEBUG_SAY(("Attempting Set_Render_Device: name: %s (%s:%s), width: %d, height: %d, windowed: %d\n",
 		_RenderDeviceNameTable[CurRenderDevice],_RenderDeviceDescriptionTable[CurRenderDevice].Get_Driver_Name(),
 		_RenderDeviceDescriptionTable[CurRenderDevice].Get_Driver_Version(),ResolutionWidth,ResolutionHeight,(IsWindowed ? 1 : 0)));
