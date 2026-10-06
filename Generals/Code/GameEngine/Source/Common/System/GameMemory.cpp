@@ -3259,6 +3259,7 @@ void MemoryPoolFactory::debugMemoryReport(Int flags, Int startCheckpoint, Int en
 #endif
 
 static int theLinkTester = 0;
+static void* volatile theLinkEscape = NULL;
 
 //-----------------------------------------------------------------------------
 void* STLSpecialAlloc::allocate(size_t __n) 
@@ -3457,21 +3458,34 @@ void initMemoryManager()
 	
 	theLinkTester = 0; 
 
+	// GCC's optimizer deletes new/delete pairs whose result never escapes
+	// (unlike MSVC), which defeats this linkage self-test. Route every
+	// allocation through a volatile sink so the operators really get called.
 	linktest = new char;
+	theLinkEscape = linktest;
 	delete linktest;
+	theLinkEscape = NULL;
 
 	linktest = new char[8];
+	theLinkEscape = linktest;
 	delete [] linktest;
+	theLinkEscape = NULL;
 
 	linktest = new char("",1);
+	theLinkEscape = linktest;
 	delete linktest;
+	theLinkEscape = NULL;
 
 #ifdef MEMORYPOOL_OVERRIDE_MALLOC
 	linktest = (char*)malloc(1);
+	theLinkEscape = linktest;
 	free(linktest);
+	theLinkEscape = NULL;
 
 	linktest = (char*)calloc(1,1);
+	theLinkEscape = linktest;
 	free(linktest);
+	theLinkEscape = NULL;
 #endif
 
 #ifdef MEMORYPOOL_OVERRIDE_MALLOC
