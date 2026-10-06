@@ -1816,6 +1816,11 @@ static HRESULT dx8rb_CreateDevice(void* self, UINT adapter, int devType, HWND hw
 
 #define DX8_STUB(nm) static unsigned long long nm(void* self) { (void)self; return 0; }
 
+/* generic stubs for unimplemented bridge entry points */
+static HRESULT dx8dev__stub_GetRasterStatus(void* a, void* b, void* c, void* d, void* e, void* f) { (void)a;(void)b;(void)c;(void)d;(void)e;(void)f; return 0x80070032L; }
+static HRESULT dx8dev__stub_TestCooperativeLevel(void* a, void* b, void* c, void* d, void* e, void* f) { (void)a;(void)b;(void)c;(void)d;(void)e;(void)f; return 0; }
+static HRESULT dx8rb__stub_RegisterSoftwareDevice(void* a, void* b, void* c, void* d, void* e, void* f) { (void)a;(void)b;(void)c;(void)d;(void)e;(void)f; return 0; }
+
 #include "dx8vk_vtbl_gen.inc"
 
 #undef DX8_STUB

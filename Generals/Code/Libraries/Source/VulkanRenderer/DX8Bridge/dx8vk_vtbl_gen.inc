@@ -28,10 +28,11 @@ DX8_STUB(dx8dev_DrawTriPatch)
 DX8_STUB(dx8dev_DeletePatch)
 
 // vtables
-static void* const dx8vt_dx8rb[15] = {
+static void* const dx8vt_dx8rb[16] = {
     (void*)dx8rb_QueryInterface,
     (void*)dx8rb_AddRef,
     (void*)dx8rb_Release,
+    (void*)dx8rb__stub_RegisterSoftwareDevice,
     (void*)dx8rb_GetAdapterCount,
     (void*)dx8rb_GetAdapterIdentifier,
     (void*)dx8rb_GetAdapterModeCount,
@@ -46,10 +47,11 @@ static void* const dx8vt_dx8rb[15] = {
     (void*)dx8rb_CreateDevice,
 };
 
-static void* const dx8vt_dx8dev[95] = {
+static void* const dx8vt_dx8dev[97] = {
     (void*)dx8dev_QueryInterface,
     (void*)dx8dev_AddRef,
     (void*)dx8dev_Release,
+    (void*)dx8dev__stub_TestCooperativeLevel,
     (void*)dx8dev_GetAvailableTextureMem,
     (void*)dx8dev_ResourceManagerDiscardBytes,
     (void*)dx8dev_GetDirect3D,
@@ -63,6 +65,7 @@ static void* const dx8vt_dx8dev[95] = {
     (void*)dx8dev_Reset,
     (void*)dx8dev_Present,
     (void*)dx8dev_GetBackBuffer,
+    (void*)dx8dev__stub_GetRasterStatus,
     (void*)dx8dev_SetGammaRamp,
     (void*)dx8dev_GetGammaRamp,
     (void*)dx8dev_CreateTexture,
@@ -144,13 +147,14 @@ static void* const dx8vt_dx8dev[95] = {
     (void*)dx8dev_DeletePatch,
 };
 
-static void* const dx8vt_dx8vb[13] = {
+static void* const dx8vt_dx8vb[14] = {
     (void*)dx8vb_QueryInterface,
     (void*)dx8vb_AddRef,
     (void*)dx8vb_Release,
     (void*)dx8vb_GetDevice,
     (void*)dx8vb_SetPrivateData,
     (void*)dx8vb_GetPrivateData,
+    (void*)dx8sf_FreePrivateData,
     (void*)dx8vb_SetPriority,
     (void*)dx8vb_GetPriority,
     (void*)dx8vb_PreLoad,
@@ -160,13 +164,14 @@ static void* const dx8vt_dx8vb[13] = {
     (void*)dx8vb_GetDesc,
 };
 
-static void* const dx8vt_dx8ib[13] = {
+static void* const dx8vt_dx8ib[14] = {
     (void*)dx8ib_QueryInterface,
     (void*)dx8ib_AddRef,
     (void*)dx8ib_Release,
     (void*)dx8ib_GetDevice,
     (void*)dx8ib_SetPrivateData,
     (void*)dx8ib_GetPrivateData,
+    (void*)dx8sf_FreePrivateData,
     (void*)dx8ib_SetPriority,
     (void*)dx8ib_GetPriority,
     (void*)dx8ib_PreLoad,
@@ -176,13 +181,14 @@ static void* const dx8vt_dx8ib[13] = {
     (void*)dx8ib_GetDesc,
 };
 
-static void* const dx8vt_dx8tx[18] = {
+static void* const dx8vt_dx8tx[19] = {
     (void*)dx8tx_QueryInterface,
     (void*)dx8tx_AddRef,
     (void*)dx8tx_Release,
     (void*)dx8tx_GetDevice,
     (void*)dx8tx_SetPrivateData,
     (void*)dx8tx_GetPrivateData,
+    (void*)dx8sf_FreePrivateData,
     (void*)dx8tx_SetPriority,
     (void*)dx8tx_GetPriority,
     (void*)dx8tx_PreLoad,
