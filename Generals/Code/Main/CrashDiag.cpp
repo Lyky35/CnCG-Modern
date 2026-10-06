@@ -37,10 +37,30 @@ static void CrashDiagInit(void)
 	}
 }
 
-static FILE* OpenLog(void)
+static HANDLE OpenLogRaw(void)
 {
 	CrashDiagInit();
-	return fopen(g_logPath, "a");
+	HANDLE h = CreateFileA(g_logPath, GENERIC_WRITE, FILE_SHARE_READ, NULL,
+		OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (h != INVALID_HANDLE_VALUE) SetFilePointer(h, 0, NULL, FILE_END);
+	return h;
+}
+
+static void WriteStr(HANDLE h, const char* s0)
+{
+	DWORD wr;
+	WriteFile(h, s0, (DWORD)lstrlenA(s0), &wr, NULL);
+}
+
+static void WriteHexU(HANDLE h, ULONG64 v)
+{
+	char buf[20];
+	static const char* hx = "0123456789abcdef";
+	int i = 16;
+	buf[0] = '0'; buf[1] = 'x';
+	for (int b = 60; b >= 0; b -= 4, --i) buf[i] = hx[(v >> b) & 0xf];
+	buf[18] = '\n'; buf[19] = 0;
+	WriteStr(h, buf);
 }
 
 static BOOL IsReadable(ULONG64 addr, SIZE_T len)
@@ -54,13 +74,14 @@ static BOOL IsReadable(ULONG64 addr, SIZE_T len)
 	return (addr >= (ULONG64)mbi.BaseAddress && addr + len <= regionEnd);
 }
 
-static void LogFrame(FILE* f, const char* tag, ULONG64 addr)
+static void LogFrame(HANDLE h, const char* tag, ULONG64 addr)
 {
+	char line[80];
 	if (addr >= g_imageBase && addr < g_imageBase + g_imageSize) {
-		fprintf(f, "%s RTS.exe+0x%llx\n", tag, (unsigned long long)(addr - g_imageBase));
+		wsprintfA(line, "%s RTS.exe+0x%x\n", tag, (unsigned int)(addr - g_imageBase));
+		WriteStr(h, line);
 		return;
 	}
-	// attribute to a loaded module if we can identify one
 	HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetCurrentProcessId());
 	if (snap != INVALID_HANDLE_VALUE) {
 		MODULEENTRY32 me; me.dwSize = sizeof(me);
@@ -68,7 +89,8 @@ static void LogFrame(FILE* f, const char* tag, ULONG64 addr)
 			do {
 				ULONG64 b = (ULONG64)me.modBaseAddr;
 				if (addr >= b && addr < b + me.modBaseSize) {
-					fprintf(f, "%s %s+0x%lx\n", tag, me.szModule, (unsigned long)(addr - b));
+					wsprintfA(line, "%s %s+0x%x\n", tag, me.szModule, (unsigned int)(addr - b));
+					WriteStr(h, line);
 					CloseHandle(snap);
 					return;
 				}
@@ -76,31 +98,38 @@ static void LogFrame(FILE* f, const char* tag, ULONG64 addr)
 		}
 		CloseHandle(snap);
 	}
-	fprintf(f, "%s 0x%llx\n", tag, (unsigned long long)addr);
+	wsprintfA(line, "%s ", tag);
+	WriteStr(h, line);
+	WriteHexU(h, addr);
 }
 
 static LONG WINAPI CrashDiagHandler(PEXCEPTION_POINTERS ep)
 {
-	FILE* f = OpenLog();
-	if (!f) return EXCEPTION_CONTINUE_SEARCH;
+	HANDLE h = OpenLogRaw();
+	if (h == INVALID_HANDLE_VALUE) return EXCEPTION_CONTINUE_SEARCH;
 
 	EXCEPTION_RECORD* er = ep->ExceptionRecord;
 	CONTEXT* c = ep->ContextRecord;
+	ULONG code = er->ExceptionCode;
 
-	fprintf(f, "--- exception ---\n");
-	fprintf(f, "code=0x%08lx flags=0x%lx addr=0x%llx\n",
-		(unsigned long)er->ExceptionCode, (unsigned long)er->ExceptionFlags,
-		(unsigned long long)er->ExceptionAddress);
-	if (er->ExceptionCode == EXCEPTION_ACCESS_VIOLATION && er->NumberParameters >= 2) {
-		fprintf(f, "AV: %s 0x%llx\n",
-			er->ExceptionInformation[0] == 1 ? "WRITE to" : (er->ExceptionInformation[0] == 2 ? "DEP EXEC of" : "READ of"),
-			(unsigned long long)er->ExceptionInformation[1]);
+	WriteStr(h, "--- exception ---\n");
+	WriteStr(h, "code="); WriteHexU(h, code);
+	WriteStr(h, " addr="); WriteHexU(h, (ULONG64)er->ExceptionAddress);
+	if (code == EXCEPTION_ACCESS_VIOLATION && er->NumberParameters >= 2) {
+		WriteStr(h, er->ExceptionInformation[0] == 1 ? "AV: WRITE to " :
+			(er->ExceptionInformation[0] == 2 ? "AV: DEP EXEC of " : "AV: READ of "));
+		WriteHexU(h, er->ExceptionInformation[1]);
 	}
-	LogFrame(f, "RIP", c->Rip);
-	fprintf(f, "  args: rcx=0x%llx rdx=0x%llx r8=0x%llx r9=0x%llx r10=0x%llx r11=0x%llx\n",
-		(unsigned long long)c->Rcx, (unsigned long long)c->Rdx,
-		(unsigned long long)c->R8, (unsigned long long)c->R9,
-		(unsigned long long)c->R10, (unsigned long long)c->R11);
+	if (code == (ULONG)0xC00000FD) {
+		WriteStr(h, "STACK OVERFLOW\n");
+		CloseHandle(h);
+		return EXCEPTION_EXECUTE_HANDLER;
+	}
+	LogFrame(h, "RIP", c->Rip);
+	WriteStr(h, "  args: rcx="); WriteHexU(h, c->Rcx);
+	WriteStr(h, "  rdx="); WriteHexU(h, c->Rdx);
+	WriteStr(h, "  r8="); WriteHexU(h, c->R8);
+	WriteStr(h, "  r9="); WriteHexU(h, c->R9);
 
 	// Proper unwind via ntdll's table-based unwinder.
 	typedef PRUNTIME_FUNCTION (WINAPI *LookupFn)(ULONG64, PULONG64, PVOID);
@@ -120,11 +149,10 @@ static LONG WINAPI CrashDiagHandler(PEXCEPTION_POINTERS ep)
 			unwind(0, ib, cur.Rip, rf, &cur, &est, NULL, NULL);
 			if (!cur.Rip) break;
 			unwound = TRUE;
-			LogFrame(f, "  frame", cur.Rip);
+			LogFrame(h, "  frame", cur.Rip);
 		}
 	}
 	if (!unwound) {
-		// RBP-chain fallback.
 		ULONG64 rbp = c->Rbp;
 		for (int i = 0; i < 80; ++i) {
 			if (rbp & 7) break;
@@ -132,10 +160,10 @@ static LONG WINAPI CrashDiagHandler(PEXCEPTION_POINTERS ep)
 			ULONG64 nextRbp = *(ULONG64*)rbp;
 			ULONG64 retAddr = *(ULONG64*)(rbp + 8);
 			if (nextRbp <= rbp) break;
-			LogFrame(f, "  frame", retAddr);
+			LogFrame(h, "  frame", retAddr);
 			rbp = nextRbp;
 		}
-		fprintf(f, "  stack scrape (RTS.exe code addresses only):\n");
+		WriteStr(h, "  stack scrape (RTS.exe code addresses only):\n");
 		ULONG64 sp = c->Rsp;
 		ULONG64 prev = 0;
 		int printed = 0;
@@ -143,14 +171,13 @@ static LONG WINAPI CrashDiagHandler(PEXCEPTION_POINTERS ep)
 			if (!IsReadable(a, 8)) break;
 			ULONG64 v = *(ULONG64*)a;
 			if (v > g_imageBase + 0x1000 && v < g_imageBase + g_imageSize && v != prev) {
-				LogFrame(f, "    *", v);
+				LogFrame(h, "    *", v);
 				prev = v;
 				++printed;
 			}
 		}
 	}
-	fflush(f);
-	fclose(f);
+	CloseHandle(h);
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 
@@ -159,38 +186,50 @@ static void CrashDiagCtor(void)
 {
 	CrashDiagInit();
 	AddVectoredExceptionHandler(1, CrashDiagHandler);
-	FILE* f = fopen(g_logPath, "a");
-	if (f) {
+	HANDLE h = OpenLogRaw();
+	if (h != INVALID_HANDLE_VALUE) {
 		SYSTEMTIME st;
+		char line[128];
 		GetLocalTime(&st);
-		fprintf(f, "=== session %04d-%02d-%02d %02d:%02d:%02d base=0x%llx size=0x%llx ===\n",
-			st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond,
-			(unsigned long long)g_imageBase, (unsigned long long)g_imageSize);
-		fclose(f);
+		wsprintfA(line, "=== session %04d-%02d-%02d %02d:%02d:%02d base=",
+			st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
+		WriteStr(h, line);
+		WriteHexU(h, g_imageBase);
+		WriteStr(h, "size=");
+		WriteHexU(h, g_imageSize);
+		CloseHandle(h);
 	}
 }
 
 void CrashDiagMarker(const char* msg)
 {
-	FILE* f = OpenLog();
-	if (!f) return;
-	fprintf(f, "marker: %s\n", msg);
-	fclose(f);
+	HANDLE h = OpenLogRaw();
+	if (h == INVALID_HANDLE_VALUE) return;
+	WriteStr(h, "marker: ");
+	WriteStr(h, msg);
+	WriteStr(h, "\n");
+	CloseHandle(h);
 }
 
 void CrashDiagReportException(const char* where)
 {
-	FILE* f = OpenLog();
-	if (!f) return;
-	fprintf(f, "exception escaped at: %s\n", where);
+	HANDLE h = OpenLogRaw();
+	if (h == INVALID_HANDLE_VALUE) return;
+	WriteStr(h, "exception escaped at: ");
+	WriteStr(h, where);
+	WriteStr(h, "\n");
 	try {
 		throw;
 	} catch (const std::exception& e) {
-		fprintf(f, "  std::exception: %s\n", e.what());
-	} catch (const char* s) {
-		fprintf(f, "  char*: %s\n", s ? s : "(null)");
+		WriteStr(h, "  std::exception: ");
+		WriteStr(h, e.what());
+		WriteStr(h, "\n");
+	} catch (const char* sp) {
+		WriteStr(h, "  char*: ");
+		WriteStr(h, sp ? sp : "(null)");
+		WriteStr(h, "\n");
 	} catch (...) {
-		fprintf(f, "  unknown exception type\n");
+		WriteStr(h, "  unknown exception type\n");
 	}
-	fclose(f);
+	CloseHandle(h);
 }
