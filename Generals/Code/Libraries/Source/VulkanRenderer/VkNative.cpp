@@ -918,7 +918,7 @@ static void tex_ensure_backing(TexObj* t)
 {
     if (t->img) return;
     VkFormat fmt = vk_format_for(t->fmt);
-    if (fmt == VK_FORMAT_UNDEFINED) { dx8vk_log_once("texfmt","unsupported texture fmt %d", (int)t->fmt); return; }
+    if (fmt == VK_FORMAT_UNDEFINED) { return dx8vk_log_once("texfmt","unsupported texture fmt %d", (int)t->fmt); return; }
     VkDeviceMemory m;
     t->img = create_image_linear(t->w ? t->w : 1, t->h ? t->h : 1, fmt,
         VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, &m);
@@ -1150,7 +1150,7 @@ static void rt_for_surface(void* surf, VkFramebuffer* fb, VkRenderPass* rp, uint
     VkFormat cf = vk_format_for(sf->fmt);
     if (cf == VK_FORMAT_UNDEFINED) { default_target(fb, rp, w, h); return; }
     if (sf->fb) { *fb = sf->fb; *rp = sf->fbValid ? getRenderPass(cf, g->defDepthFmt) : g->curRp; *w = sf->w; *h = sf->h; return; }
-    if (!sf->img) { dx8vk_log_once("rt-notex", "SetRenderTarget to non-renderable -> backbuffer"); default_target(fb, rp, w, h); return; }
+    if (!sf->img) { return dx8vk_log_once("rt-notex", "SetRenderTarget to non-renderable -> backbuffer"); default_target(fb, rp, w, h); return; }
     VkRenderPass rpass = getRenderPass(cf, g->defDepthFmt);
     VkImageView atts[2] = { sf->view, g->defDepthView };
     VkFramebufferCreateInfo fci = { VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO };
@@ -1856,12 +1856,12 @@ VKRoot* VKRoot::Create()
 }
 
 HRESULT VKRoot::QueryInterface(REFIID riid, void** ppvObject) { return dx8rb_QueryInterface((void*)this, &riid, ppvObject); }
-ULONG VKRoot::AddRef() { (ULONG)dx8rb_AddRef((void*)this); }
-ULONG VKRoot::Release() { (ULONG)dx8rb_Release((void*)this); }
+ULONG VKRoot::AddRef() { return (ULONG)dx8rb_AddRef((void*)this); }
+ULONG VKRoot::Release() { return (ULONG)dx8rb_Release((void*)this); }
 HRESULT VKRoot::RegisterSoftwareDevice(void * pInitializeFunction) { return (decltype(0ull))dx8rb__stub_RegisterSoftwareDevice((void*)this); }
-UINT VKRoot::GetAdapterCount() { (UINT)dx8rb_GetAdapterCount((void*)this); }
+UINT VKRoot::GetAdapterCount() { return (UINT)dx8rb_GetAdapterCount((void*)this); }
 HRESULT VKRoot::GetAdapterIdentifier(UINT Adapter, DWORD Flags, D3DADAPTER_IDENTIFIER8 * pIdentifier) { return dx8rb_GetAdapterIdentifier((void*)this, Adapter, Flags, pIdentifier); }
-UINT VKRoot::GetAdapterModeCount(UINT Adapter) { (UINT)dx8rb_GetAdapterModeCount((void*)this, Adapter); }
+UINT VKRoot::GetAdapterModeCount(UINT Adapter) { return (UINT)dx8rb_GetAdapterModeCount((void*)this, Adapter); }
 HRESULT VKRoot::EnumAdapterModes(UINT Adapter, UINT Mode, D3DDISPLAYMODE * pMode) { return dx8rb_EnumAdapterModes((void*)this, Adapter, Mode, pMode); }
 HRESULT VKRoot::GetAdapterDisplayMode(UINT Adapter, D3DDISPLAYMODE * pMode) { return dx8rb_GetAdapterDisplayMode((void*)this, Adapter, pMode); }
 HRESULT VKRoot::CheckDeviceType(UINT Adapter, D3DDEVTYPE CheckType, D3DFORMAT DisplayFormat, D3DFORMAT BackBufferFormat, WINBOOL Windowed) { return dx8rb_CheckDeviceType((void*)this, Adapter, CheckType, DisplayFormat, BackBufferFormat, Windowed); }
@@ -1869,13 +1869,13 @@ HRESULT VKRoot::CheckDeviceFormat(UINT Adapter, D3DDEVTYPE DeviceType, D3DFORMAT
 HRESULT VKRoot::CheckDeviceMultiSampleType(UINT Adapter, D3DDEVTYPE DeviceType, D3DFORMAT SurfaceFormat, WINBOOL Windowed, D3DMULTISAMPLE_TYPE MultiSampleType) { return dx8rb_CheckDeviceMultiSampleType((void*)this, Adapter, DeviceType, SurfaceFormat, Windowed, MultiSampleType); }
 HRESULT VKRoot::CheckDepthStencilMatch(UINT Adapter, D3DDEVTYPE DeviceType, D3DFORMAT AdapterFormat, D3DFORMAT RenderTargetFormat, D3DFORMAT DepthStencilFormat) { return dx8rb_CheckDepthStencilMatch((void*)this, Adapter, DeviceType, AdapterFormat, RenderTargetFormat, DepthStencilFormat); }
 HRESULT VKRoot::GetDeviceCaps(UINT Adapter, D3DDEVTYPE DeviceType, D3DCAPS8 * pCaps) { return dx8rb_GetDeviceCaps((void*)this, Adapter, DeviceType, pCaps); }
-HMONITOR VKRoot::GetAdapterMonitor(UINT Adapter) { (HMONITOR)dx8rb_GetAdapterMonitor((void*)this); }
+HMONITOR VKRoot::GetAdapterMonitor(UINT Adapter) { return (HMONITOR)dx8rb_GetAdapterMonitor((void*)this); }
 HRESULT VKRoot::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS * pPresentationParameters, struct VKDevice ** ppReturnedDeviceInterface) { return dx8rb_CreateDevice((void*)this, Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, ppReturnedDeviceInterface); }
 HRESULT VKDevice::QueryInterface(REFIID riid, void** ppvObject) { return dx8dev_QueryInterface((void*)this, &riid, ppvObject); }
-ULONG VKDevice::AddRef() { (ULONG)dx8dev_AddRef((void*)this); }
-ULONG VKDevice::Release() { (ULONG)dx8dev_Release((void*)this); }
+ULONG VKDevice::AddRef() { return (ULONG)dx8dev_AddRef((void*)this); }
+ULONG VKDevice::Release() { return (ULONG)dx8dev_Release((void*)this); }
 HRESULT VKDevice::TestCooperativeLevel() { return (decltype(0ull))dx8dev__stub_TestCooperativeLevel((void*)this); }
-UINT VKDevice::GetAvailableTextureMem() { (UINT)dx8dev_GetAvailableTextureMem((void*)this); }
+UINT VKDevice::GetAvailableTextureMem() { return (UINT)dx8dev_GetAvailableTextureMem((void*)this); }
 HRESULT VKDevice::ResourceManagerDiscardBytes(DWORD Bytes) { return dx8dev_ResourceManagerDiscardBytes((void*)this, Bytes); }
 HRESULT VKDevice::GetDirect3D(VKRoot ** ppD3D8) { return dx8dev_GetDirect3D((void*)this, ppD3D8); }
 HRESULT VKDevice::GetDeviceCaps(D3DCAPS8 * pCaps) { return dx8dev_GetDeviceCaps((void*)this, pCaps); }
@@ -1883,7 +1883,7 @@ HRESULT VKDevice::GetDisplayMode(D3DDISPLAYMODE * pMode) { return dx8dev_GetDisp
 HRESULT VKDevice::GetCreationParameters(D3DDEVICE_CREATION_PARAMETERS * pParameters) { return dx8dev_GetCreationParameters((void*)this, pParameters); }
 HRESULT VKDevice::SetCursorProperties(UINT XHotSpot, UINT YHotSpot, VKSurface * pCursorBitmap) { return dx8dev_SetCursorProperties((void*)this); }
 void VKDevice::SetCursorPosition(UINT XScreenSpace, UINT YScreenSpace, DWORD Flags) { (void)dx8dev_SetCursorPosition((void*)this, XScreenSpace, YScreenSpace, Flags); }
-WINBOOL VKDevice::ShowCursor(WINBOOL bShow) { (WINBOOL)dx8dev_ShowCursor((void*)this, bShow); }
+WINBOOL VKDevice::ShowCursor(WINBOOL bShow) { return (WINBOOL)dx8dev_ShowCursor((void*)this, bShow); }
 HRESULT VKDevice::CreateAdditionalSwapChain(D3DPRESENT_PARAMETERS * pPresentationParameters, VKSwapChain ** pSwapChain) { return dx8dev_CreateAdditionalSwapChain((void*)this, pPresentationParameters, pSwapChain); }
 HRESULT VKDevice::Reset(D3DPRESENT_PARAMETERS * pPresentationParameters) { return dx8dev_Reset((void*)this, pPresentationParameters); }
 HRESULT VKDevice::Present(const RECT *src_rect, const RECT *dst_rect, HWND dst_window_override, const RGNDATA *dirty_region) { return dx8dev_Present((void*)this, src_rect, dst_rect, dst_window_override, dirty_region); }
@@ -1969,8 +1969,8 @@ HRESULT VKDevice::DrawRectPatch(UINT handle, const float *segment_count, const D
 HRESULT VKDevice::DrawTriPatch(UINT handle, const float *segment_count, const D3DTRIPATCH_INFO *patch_info) { return dx8dev_DrawTriPatch((void*)this); }
 HRESULT VKDevice::DeletePatch(UINT Handle) { return dx8dev_DeletePatch((void*)this); }
 HRESULT VKVertexBuffer::QueryInterface(REFIID riid, void** ppvObject) { return dx8vb_QueryInterface((void*)this, &riid, ppvObject); }
-ULONG VKVertexBuffer::AddRef() { (ULONG)dx8vb_AddRef((void*)this); }
-ULONG VKVertexBuffer::Release() { (ULONG)dx8vb_Release((void*)this); }
+ULONG VKVertexBuffer::AddRef() { return (ULONG)dx8vb_AddRef((void*)this); }
+ULONG VKVertexBuffer::Release() { return (ULONG)dx8vb_Release((void*)this); }
 HRESULT VKVertexBuffer::GetDevice(struct VKDevice ** ppDevice) { return dx8vb_GetDevice((void*)this, ppDevice); }
 HRESULT VKVertexBuffer::SetPrivateData(REFGUID refguid, const void *data, DWORD data_size, DWORD flags) { return dx8vb_SetPrivateData((void*)this, &refguid, data, data_size); }
 HRESULT VKVertexBuffer::GetPrivateData(REFGUID refguid, void * pData, DWORD * pSizeOfData) { return dx8vb_GetPrivateData((void*)this, &refguid, pData, pSizeOfData); }
@@ -1983,8 +1983,8 @@ HRESULT VKVertexBuffer::Lock(UINT OffsetToLock, UINT SizeToLock, BYTE ** ppbData
 HRESULT VKVertexBuffer::Unlock() { return dx8vb_Unlock((void*)this); }
 HRESULT VKVertexBuffer::GetDesc(D3DVERTEXBUFFER_DESC * pDesc) { return dx8vb_GetDesc((void*)this, pDesc); }
 HRESULT VKIndexBuffer::QueryInterface(REFIID riid, void** ppvObject) { return dx8ib_QueryInterface((void*)this, &riid, ppvObject); }
-ULONG VKIndexBuffer::AddRef() { (ULONG)dx8ib_AddRef((void*)this); }
-ULONG VKIndexBuffer::Release() { (ULONG)dx8ib_Release((void*)this); }
+ULONG VKIndexBuffer::AddRef() { return (ULONG)dx8ib_AddRef((void*)this); }
+ULONG VKIndexBuffer::Release() { return (ULONG)dx8ib_Release((void*)this); }
 HRESULT VKIndexBuffer::GetDevice(struct VKDevice ** ppDevice) { return dx8ib_GetDevice((void*)this, ppDevice); }
 HRESULT VKIndexBuffer::SetPrivateData(REFGUID refguid, const void *data, DWORD data_size, DWORD flags) { return dx8ib_SetPrivateData((void*)this, &refguid, data, data_size); }
 HRESULT VKIndexBuffer::GetPrivateData(REFGUID refguid, void * pData, DWORD * pSizeOfData) { return dx8ib_GetPrivateData((void*)this, &refguid, pData, pSizeOfData); }
@@ -1997,8 +1997,8 @@ HRESULT VKIndexBuffer::Lock(UINT OffsetToLock, UINT SizeToLock, BYTE ** ppbData,
 HRESULT VKIndexBuffer::Unlock() { return dx8ib_Unlock((void*)this); }
 HRESULT VKIndexBuffer::GetDesc(D3DINDEXBUFFER_DESC * pDesc) { return dx8ib_GetDesc((void*)this, pDesc); }
 HRESULT VKBaseTexture::QueryInterface(REFIID riid, void** ppvObject) { return dx8tx_QueryInterface((void*)this, &riid, ppvObject); }
-ULONG VKBaseTexture::AddRef() { (ULONG)dx8tx_AddRef((void*)this); }
-ULONG VKBaseTexture::Release() { (ULONG)dx8tx_Release((void*)this); }
+ULONG VKBaseTexture::AddRef() { return (ULONG)dx8tx_AddRef((void*)this); }
+ULONG VKBaseTexture::Release() { return (ULONG)dx8tx_Release((void*)this); }
 HRESULT VKBaseTexture::GetDevice(struct VKDevice ** ppDevice) { return dx8tx_GetDevice((void*)this, ppDevice); }
 HRESULT VKBaseTexture::SetPrivateData(REFGUID refguid, const void *data, DWORD data_size, DWORD flags) { return dx8tx_SetPrivateData((void*)this, &refguid, data, data_size); }
 HRESULT VKBaseTexture::GetPrivateData(REFGUID refguid, void * pData, DWORD * pSizeOfData) { return dx8tx_GetPrivateData((void*)this, &refguid, pData, pSizeOfData); }
@@ -2011,8 +2011,8 @@ DWORD VKBaseTexture::SetLOD(DWORD LODNew) { (DWORD)dx8tx_SetLOD((void*)this, LOD
 DWORD VKBaseTexture::GetLOD() { (DWORD)dx8tx_GetLOD((void*)this); }
 DWORD VKBaseTexture::GetLevelCount() { (DWORD)dx8tx_GetLevelCount((void*)this); }
 HRESULT VKTexture::QueryInterface(REFIID riid, void** ppvObject) { return dx8tx_QueryInterface((void*)this, &riid, ppvObject); }
-ULONG VKTexture::AddRef() { (ULONG)dx8tx_AddRef((void*)this); }
-ULONG VKTexture::Release() { (ULONG)dx8tx_Release((void*)this); }
+ULONG VKTexture::AddRef() { return (ULONG)dx8tx_AddRef((void*)this); }
+ULONG VKTexture::Release() { return (ULONG)dx8tx_Release((void*)this); }
 HRESULT VKTexture::GetDevice(struct VKDevice ** ppDevice) { return dx8tx_GetDevice((void*)this, ppDevice); }
 HRESULT VKTexture::SetPrivateData(REFGUID refguid, const void *data, DWORD data_size, DWORD flags) { return dx8tx_SetPrivateData((void*)this, &refguid, data, data_size); }
 HRESULT VKTexture::GetPrivateData(REFGUID refguid, void * pData, DWORD * pSizeOfData) { return dx8tx_GetPrivateData((void*)this, &refguid, pData, pSizeOfData); }
@@ -2030,8 +2030,8 @@ HRESULT VKTexture::LockRect(UINT level, D3DLOCKED_RECT *locked_rect, const RECT 
 HRESULT VKTexture::UnlockRect(UINT Level) { return dx8tx_UnlockRect((void*)this); }
 HRESULT VKTexture::AddDirtyRect(const RECT *dirty_rect) { return dx8tx_AddDirtyRect((void*)this, dirty_rect); }
 HRESULT VKSurface::QueryInterface(REFIID riid, void** ppvObject) { return dx8sf_QueryInterface((void*)this, &riid, ppvObject); }
-ULONG VKSurface::AddRef() { (ULONG)dx8sf_AddRef((void*)this); }
-ULONG VKSurface::Release() { (ULONG)dx8sf_Release((void*)this); }
+ULONG VKSurface::AddRef() { return (ULONG)dx8sf_AddRef((void*)this); }
+ULONG VKSurface::Release() { return (ULONG)dx8sf_Release((void*)this); }
 HRESULT VKSurface::GetDevice(struct VKDevice ** ppDevice) { return dx8sf_GetDevice((void*)this, ppDevice); }
 HRESULT VKSurface::SetPrivateData(REFGUID refguid, const void *data, DWORD data_size, DWORD flags) { return dx8sf_SetPrivateData((void*)this, &refguid, data, data_size); }
 HRESULT VKSurface::GetPrivateData(REFGUID refguid, void * pData, DWORD * pSizeOfData) { return dx8sf_GetPrivateData((void*)this, &refguid, pData, pSizeOfData); }
