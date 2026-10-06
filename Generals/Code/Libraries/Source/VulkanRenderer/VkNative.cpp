@@ -1903,15 +1903,15 @@ HRESULT VKDevice::GetDeviceCaps(D3DCAPS8 * pCaps) { return dx8dev_GetDeviceCaps(
 HRESULT VKDevice::GetDisplayMode(D3DDISPLAYMODE * pMode) { return dx8dev_GetDisplayMode((void*)this, pMode); }
 HRESULT VKDevice::GetCreationParameters(D3DDEVICE_CREATION_PARAMETERS * pParameters) { return dx8dev_GetCreationParameters((void*)this, pParameters); }
 HRESULT VKDevice::SetCursorProperties(UINT XHotSpot, UINT YHotSpot, VKSurface * pCursorBitmap) { return dx8dev_SetCursorProperties((void*)this); }
-void VKDevice::SetCursorPosition(UINT XScreenSpace, UINT YScreenSpace, DWORD Flags) { (void)dx8dev_SetCursorPosition((void*)this, XScreenSpace, YScreenSpace, Flags); }
+void VKDevice::SetCursorPosition(UINT XScreenSpace, UINT YScreenSpace, DWORD Flags) { return (void)dx8dev_SetCursorPosition((void*)this, XScreenSpace, YScreenSpace, Flags); }
 WINBOOL VKDevice::ShowCursor(WINBOOL bShow) { return (WINBOOL)dx8dev_ShowCursor((void*)this, bShow); }
 HRESULT VKDevice::CreateAdditionalSwapChain(D3DPRESENT_PARAMETERS * pPresentationParameters, VKSwapChain ** pSwapChain) { return dx8dev_CreateAdditionalSwapChain((void*)this, pPresentationParameters, pSwapChain); }
 HRESULT VKDevice::Reset(D3DPRESENT_PARAMETERS * pPresentationParameters) { return dx8dev_Reset((void*)this, pPresentationParameters); }
 HRESULT VKDevice::Present(const RECT *src_rect, const RECT *dst_rect, HWND dst_window_override, const RGNDATA *dirty_region) { return dx8dev_Present((void*)this, src_rect, dst_rect, dst_window_override, dirty_region); }
 HRESULT VKDevice::GetBackBuffer(UINT BackBuffer, D3DBACKBUFFER_TYPE Type, VKSurface ** ppBackBuffer) { return dx8dev_GetBackBuffer((void*)this, BackBuffer, Type, ppBackBuffer); }
 HRESULT VKDevice::GetRasterStatus(D3DRASTER_STATUS * pRasterStatus) { return (decltype(0ull))dx8dev__stub_GetRasterStatus((void*)this); }
-void VKDevice::SetGammaRamp(DWORD flags, const D3DGAMMARAMP *ramp) { (void)dx8dev_SetGammaRamp((void*)this, flags, ramp); }
-void VKDevice::GetGammaRamp(D3DGAMMARAMP * pRamp) { (void)dx8dev_GetGammaRamp((void*)this, pRamp); }
+void VKDevice::SetGammaRamp(DWORD flags, const D3DGAMMARAMP *ramp) { return (void)dx8dev_SetGammaRamp((void*)this, flags, ramp); }
+void VKDevice::GetGammaRamp(D3DGAMMARAMP * pRamp) { return (void)dx8dev_GetGammaRamp((void*)this, pRamp); }
 HRESULT VKDevice::CreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, VKTexture ** ppTexture) { return dx8dev_CreateTexture((void*)this, Width, Height, Levels, Usage, Format, Pool, ppTexture); }
 HRESULT VKDevice::CreateVolumeTexture(UINT Width, UINT Height, UINT Depth, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, VKVolumeTexture ** ppVolumeTexture) { return dx8dev_CreateVolumeTexture((void*)this, Width, Height, Depth, Levels, Usage, Format, Pool, ppVolumeTexture); }
 HRESULT VKDevice::CreateCubeTexture(UINT EdgeLength, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, VKCubeTexture ** ppCubeTexture) { return dx8dev_CreateCubeTexture((void*)this, EdgeLength, Levels, Usage, Format, Pool, ppCubeTexture); }
@@ -1996,10 +1996,10 @@ HRESULT VKVertexBuffer::GetDevice(struct VKDevice ** ppDevice) { return dx8vb_Ge
 HRESULT VKVertexBuffer::SetPrivateData(REFGUID refguid, const void *data, DWORD data_size, DWORD flags) { return dx8vb_SetPrivateData((void*)this, &refguid, data, data_size); }
 HRESULT VKVertexBuffer::GetPrivateData(REFGUID refguid, void * pData, DWORD * pSizeOfData) { return dx8vb_GetPrivateData((void*)this, &refguid, pData, pSizeOfData); }
 HRESULT VKVertexBuffer::FreePrivateData(REFGUID refguid) { return dx8sf_FreePrivateData((void*)this, &refguid); }
-DWORD VKVertexBuffer::SetPriority(DWORD PriorityNew) { (DWORD)dx8vb_SetPriority((void*)this, PriorityNew); }
-DWORD VKVertexBuffer::GetPriority() { (DWORD)dx8vb_GetPriority((void*)this); }
-void VKVertexBuffer::PreLoad() { (void)dx8vb_PreLoad((void*)this); }
-D3DRESOURCETYPE VKVertexBuffer::GetType() { (D3DRESOURCETYPE)dx8vb_GetType((void*)this); }
+DWORD VKVertexBuffer::SetPriority(DWORD PriorityNew) { return (DWORD)dx8vb_SetPriority((void*)this, PriorityNew); }
+DWORD VKVertexBuffer::GetPriority() { return (DWORD)dx8vb_GetPriority((void*)this); }
+void VKVertexBuffer::PreLoad() { return (void)dx8vb_PreLoad((void*)this); }
+D3DRESOURCETYPE VKVertexBuffer::GetType() { return (D3DRESOURCETYPE)dx8vb_GetType((void*)this); }
 HRESULT VKVertexBuffer::Lock(UINT OffsetToLock, UINT SizeToLock, BYTE ** ppbData, DWORD Flags) { return dx8vb_Lock((void*)this, OffsetToLock, SizeToLock, ppbData, Flags); }
 HRESULT VKVertexBuffer::Unlock() { return dx8vb_Unlock((void*)this); }
 HRESULT VKVertexBuffer::GetDesc(D3DVERTEXBUFFER_DESC * pDesc) { return dx8vb_GetDesc((void*)this, pDesc); }
@@ -2010,10 +2010,10 @@ HRESULT VKIndexBuffer::GetDevice(struct VKDevice ** ppDevice) { return dx8ib_Get
 HRESULT VKIndexBuffer::SetPrivateData(REFGUID refguid, const void *data, DWORD data_size, DWORD flags) { return dx8ib_SetPrivateData((void*)this, &refguid, data, data_size); }
 HRESULT VKIndexBuffer::GetPrivateData(REFGUID refguid, void * pData, DWORD * pSizeOfData) { return dx8ib_GetPrivateData((void*)this, &refguid, pData, pSizeOfData); }
 HRESULT VKIndexBuffer::FreePrivateData(REFGUID refguid) { return dx8sf_FreePrivateData((void*)this, &refguid); }
-DWORD VKIndexBuffer::SetPriority(DWORD PriorityNew) { (DWORD)dx8ib_SetPriority((void*)this, PriorityNew); }
-DWORD VKIndexBuffer::GetPriority() { (DWORD)dx8ib_GetPriority((void*)this); }
-void VKIndexBuffer::PreLoad() { (void)dx8ib_PreLoad((void*)this); }
-D3DRESOURCETYPE VKIndexBuffer::GetType() { (D3DRESOURCETYPE)dx8ib_GetType((void*)this); }
+DWORD VKIndexBuffer::SetPriority(DWORD PriorityNew) { return (DWORD)dx8ib_SetPriority((void*)this, PriorityNew); }
+DWORD VKIndexBuffer::GetPriority() { return (DWORD)dx8ib_GetPriority((void*)this); }
+void VKIndexBuffer::PreLoad() { return (void)dx8ib_PreLoad((void*)this); }
+D3DRESOURCETYPE VKIndexBuffer::GetType() { return (D3DRESOURCETYPE)dx8ib_GetType((void*)this); }
 HRESULT VKIndexBuffer::Lock(UINT OffsetToLock, UINT SizeToLock, BYTE ** ppbData, DWORD Flags) { return dx8ib_Lock((void*)this, OffsetToLock, SizeToLock, ppbData, Flags); }
 HRESULT VKIndexBuffer::Unlock() { return dx8ib_Unlock((void*)this); }
 HRESULT VKIndexBuffer::GetDesc(D3DINDEXBUFFER_DESC * pDesc) { return dx8ib_GetDesc((void*)this, pDesc); }
@@ -2024,13 +2024,13 @@ HRESULT VKBaseTexture::GetDevice(struct VKDevice ** ppDevice) { return dx8tx_Get
 HRESULT VKBaseTexture::SetPrivateData(REFGUID refguid, const void *data, DWORD data_size, DWORD flags) { return dx8tx_SetPrivateData((void*)this, &refguid, data, data_size); }
 HRESULT VKBaseTexture::GetPrivateData(REFGUID refguid, void * pData, DWORD * pSizeOfData) { return dx8tx_GetPrivateData((void*)this, &refguid, pData, pSizeOfData); }
 HRESULT VKBaseTexture::FreePrivateData(REFGUID refguid) { return dx8sf_FreePrivateData((void*)this, &refguid); }
-DWORD VKBaseTexture::SetPriority(DWORD PriorityNew) { (DWORD)dx8tx_SetPriority((void*)this, PriorityNew); }
-DWORD VKBaseTexture::GetPriority() { (DWORD)dx8tx_GetPriority((void*)this); }
-void VKBaseTexture::PreLoad() { (void)dx8tx_PreLoad((void*)this); }
-D3DRESOURCETYPE VKBaseTexture::GetType() { (D3DRESOURCETYPE)dx8tx_GetType((void*)this); }
-DWORD VKBaseTexture::SetLOD(DWORD LODNew) { (DWORD)dx8tx_SetLOD((void*)this, LODNew); }
-DWORD VKBaseTexture::GetLOD() { (DWORD)dx8tx_GetLOD((void*)this); }
-DWORD VKBaseTexture::GetLevelCount() { (DWORD)dx8tx_GetLevelCount((void*)this); }
+DWORD VKBaseTexture::SetPriority(DWORD PriorityNew) { return (DWORD)dx8tx_SetPriority((void*)this, PriorityNew); }
+DWORD VKBaseTexture::GetPriority() { return (DWORD)dx8tx_GetPriority((void*)this); }
+void VKBaseTexture::PreLoad() { return (void)dx8tx_PreLoad((void*)this); }
+D3DRESOURCETYPE VKBaseTexture::GetType() { return (D3DRESOURCETYPE)dx8tx_GetType((void*)this); }
+DWORD VKBaseTexture::SetLOD(DWORD LODNew) { return (DWORD)dx8tx_SetLOD((void*)this, LODNew); }
+DWORD VKBaseTexture::GetLOD() { return (DWORD)dx8tx_GetLOD((void*)this); }
+DWORD VKBaseTexture::GetLevelCount() { return (DWORD)dx8tx_GetLevelCount((void*)this); }
 HRESULT VKTexture::QueryInterface(REFIID riid, void** ppvObject) { return dx8tx_QueryInterface((void*)this, &riid, ppvObject); }
 ULONG VKTexture::AddRef() { return (ULONG)dx8tx_AddRef((void*)this); }
 ULONG VKTexture::Release() { return (ULONG)dx8tx_Release((void*)this); }
@@ -2038,13 +2038,13 @@ HRESULT VKTexture::GetDevice(struct VKDevice ** ppDevice) { return dx8tx_GetDevi
 HRESULT VKTexture::SetPrivateData(REFGUID refguid, const void *data, DWORD data_size, DWORD flags) { return dx8tx_SetPrivateData((void*)this, &refguid, data, data_size); }
 HRESULT VKTexture::GetPrivateData(REFGUID refguid, void * pData, DWORD * pSizeOfData) { return dx8tx_GetPrivateData((void*)this, &refguid, pData, pSizeOfData); }
 HRESULT VKTexture::FreePrivateData(REFGUID refguid) { return dx8sf_FreePrivateData((void*)this, &refguid); }
-DWORD VKTexture::SetPriority(DWORD PriorityNew) { (DWORD)dx8tx_SetPriority((void*)this, PriorityNew); }
-DWORD VKTexture::GetPriority() { (DWORD)dx8tx_GetPriority((void*)this); }
-void VKTexture::PreLoad() { (void)dx8tx_PreLoad((void*)this); }
-D3DRESOURCETYPE VKTexture::GetType() { (D3DRESOURCETYPE)dx8tx_GetType((void*)this); }
-DWORD VKTexture::SetLOD(DWORD LODNew) { (DWORD)dx8tx_SetLOD((void*)this, LODNew); }
-DWORD VKTexture::GetLOD() { (DWORD)dx8tx_GetLOD((void*)this); }
-DWORD VKTexture::GetLevelCount() { (DWORD)dx8tx_GetLevelCount((void*)this); }
+DWORD VKTexture::SetPriority(DWORD PriorityNew) { return (DWORD)dx8tx_SetPriority((void*)this, PriorityNew); }
+DWORD VKTexture::GetPriority() { return (DWORD)dx8tx_GetPriority((void*)this); }
+void VKTexture::PreLoad() { return (void)dx8tx_PreLoad((void*)this); }
+D3DRESOURCETYPE VKTexture::GetType() { return (D3DRESOURCETYPE)dx8tx_GetType((void*)this); }
+DWORD VKTexture::SetLOD(DWORD LODNew) { return (DWORD)dx8tx_SetLOD((void*)this, LODNew); }
+DWORD VKTexture::GetLOD() { return (DWORD)dx8tx_GetLOD((void*)this); }
+DWORD VKTexture::GetLevelCount() { return (DWORD)dx8tx_GetLevelCount((void*)this); }
 HRESULT VKTexture::GetLevelDesc(UINT Level, D3DSURFACE_DESC * pDesc) { return dx8tx_GetLevelDesc((void*)this, Level, pDesc); }
 HRESULT VKTexture::GetSurfaceLevel(UINT Level, VKSurface ** ppSurfaceLevel) { return dx8tx_GetSurfaceLevel((void*)this, Level, ppSurfaceLevel); }
 HRESULT VKTexture::LockRect(UINT level, D3DLOCKED_RECT *locked_rect, const RECT *rect, DWORD flags) { return dx8tx_LockRect((void*)this, level, locked_rect, rect, flags); }
