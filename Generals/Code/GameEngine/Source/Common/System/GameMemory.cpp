@@ -3260,11 +3260,18 @@ void MemoryPoolFactory::debugMemoryReport(Int flags, Int startCheckpoint, Int en
 
 static int theLinkTester = 0;
 static void* volatile theLinkEscape = NULL;
+// GCC folds the 'theLinkTester = 0' store away when it can prove the (6)
+// check never passes on some path (UB-based constant folding); mirror the
+// counter through a volatile so the self-test stays observable at -O3.
+static volatile int theLinkTesterV = 0;
+#define LINKTEST_SET(v) do { theLinkTester = (v); theLinkTesterV = (v); } while (0)
+#define LINKTEST_BUMP() do { theLinkTester = theLinkTester + 1; theLinkTesterV = theLinkTester; } while (0)
+#define LINKTEST_GET() (theLinkTesterV)
 
 //-----------------------------------------------------------------------------
 void* STLSpecialAlloc::allocate(size_t __n) 
 {  
-	++theLinkTester;
+	LINKTEST_BUMP();
 	preMainInitMemoryManager();
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator new"));
 	return TheDynamicMemoryAllocator->allocateBytes(__n, "STL_"); 
@@ -3273,7 +3280,7 @@ void* STLSpecialAlloc::allocate(size_t __n)
 //-----------------------------------------------------------------------------
 void STLSpecialAlloc::deallocate(void* __p, size_t) 
 { 
-	++theLinkTester;
+	LINKTEST_BUMP();
 	preMainInitMemoryManager();
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator new"));
 	TheDynamicMemoryAllocator->freeBytes(__p); 
@@ -3285,7 +3292,7 @@ void STLSpecialAlloc::deallocate(void* __p, size_t)
 */
 void *operator new(size_t size)
 {
-	++theLinkTester;
+	LINKTEST_BUMP();
 	preMainInitMemoryManager();
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator new"));
 	return TheDynamicMemoryAllocator->allocateBytes(size, "global operator new");
@@ -3297,7 +3304,7 @@ void *operator new(size_t size)
 */
 void *operator new[](size_t size)
 {
-	++theLinkTester;
+	LINKTEST_BUMP();
 	preMainInitMemoryManager();
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator new"));
 	return TheDynamicMemoryAllocator->allocateBytes(size, "global operator new[]");
@@ -3309,7 +3316,7 @@ void *operator new[](size_t size)
 */
 void operator delete(void *p) noexcept
 {
-	++theLinkTester;
+	LINKTEST_BUMP();
 	preMainInitMemoryManager();
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator delete"));
 	TheDynamicMemoryAllocator->freeBytes(p);
@@ -3321,7 +3328,7 @@ void operator delete(void *p) noexcept
 */
 void operator delete[](void *p) noexcept
 {
-	++theLinkTester;
+	LINKTEST_BUMP();
 	preMainInitMemoryManager();
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator delete"));
 	TheDynamicMemoryAllocator->freeBytes(p);
@@ -3333,7 +3340,7 @@ void operator delete[](void *p) noexcept
 */
 void* operator new(size_t size, const char * fname, int)
 {
-	++theLinkTester;
+	LINKTEST_BUMP();
 	preMainInitMemoryManager();
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator new"));
 #ifdef MEMORYPOOL_DEBUG
@@ -3349,7 +3356,7 @@ void* operator new(size_t size, const char * fname, int)
 */
 void operator delete(void * p, const char *, int)
 {
-	++theLinkTester;
+	LINKTEST_BUMP();
 	preMainInitMemoryManager();
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator delete"));
 	TheDynamicMemoryAllocator->freeBytes(p);
@@ -3361,7 +3368,7 @@ void operator delete(void * p, const char *, int)
 */
 void* operator new[](size_t size, const char * fname, int)
 {
-	++theLinkTester;
+	LINKTEST_BUMP();
 	preMainInitMemoryManager();
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator new"));
 #ifdef MEMORYPOOL_DEBUG
@@ -3377,7 +3384,7 @@ void* operator new[](size_t size, const char * fname, int)
 */
 void operator delete[](void * p, const char *, int)
 {
-	++theLinkTester;
+	LINKTEST_BUMP();
 	preMainInitMemoryManager();
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator delete"));
 	TheDynamicMemoryAllocator->freeBytes(p);
@@ -3387,7 +3394,7 @@ void operator delete[](void * p, const char *, int)
 #ifdef MEMORYPOOL_OVERRIDE_MALLOC
 void *calloc(size_t a, size_t b)
 {
-	++theLinkTester;
+	LINKTEST_BUMP();
 	preMainInitMemoryManager();
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager"));
 	return TheDynamicMemoryAllocator->allocateBytes(a * b, "calloc");
@@ -3398,7 +3405,7 @@ void *calloc(size_t a, size_t b)
 #ifdef MEMORYPOOL_OVERRIDE_MALLOC
 void  free(void * p)
 {
-	++theLinkTester;
+	LINKTEST_BUMP();
 	preMainInitMemoryManager();
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager"));
 	TheDynamicMemoryAllocator->freeBytes(p);
@@ -3409,7 +3416,7 @@ void  free(void * p)
 #ifdef MEMORYPOOL_OVERRIDE_MALLOC
 void *malloc(size_t a)
 {
-	++theLinkTester;
+	LINKTEST_BUMP();
 	preMainInitMemoryManager();
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager"));
 	return TheDynamicMemoryAllocator->allocateBytesDoNotZero(a, "malloc");
@@ -3456,7 +3463,7 @@ void initMemoryManager()
 
 	char* linktest;
 	
-	theLinkTester = 0; 
+	LINKTEST_SET(0); 
 
 	// GCC's optimizer deletes new/delete pairs whose result never escapes
 	// (unlike MSVC), which defeats this linkage self-test. Route every
@@ -3488,22 +3495,24 @@ void initMemoryManager()
 	theLinkEscape = NULL;
 #endif
 
+	if (LINKTEST_GET() !=
 #ifdef MEMORYPOOL_OVERRIDE_MALLOC
-	if (theLinkTester != 10)
+		10
 #else
-	if (theLinkTester != 6)
+		6
 #endif
+		)
 	{
 		DEBUG_CRASH(("Wrong operator new/delete linked in! Fix this...\n"));
 		{
 			extern void CrashDiagMarker(const char* msg);
 			char buf[128];
-			wsprintfA(buf, "linktest FAILED: got=%d expected=%d override=%d",
-				theLinkTester,
+			wsprintfA(buf, "linktest FAILED: got=%d override=%d",
+				(int)LINKTEST_GET(),
 #ifdef MEMORYPOOL_OVERRIDE_MALLOC
-				10, (theLinkTester==10?1:0));
+				1);
 #else
-				6, 0);
+				0);
 #endif
 			CrashDiagMarker(buf);
 		}
@@ -3591,7 +3600,7 @@ void shutdownMemoryManager()
 //-----------------------------------------------------------------------------
 void* createW3DMemPool(const char *poolName, int allocationSize)
 {
-	++theLinkTester;
+	LINKTEST_BUMP();
 	preMainInitMemoryManager();
 	MemoryPool* pool = TheMemoryPoolFactory->createMemoryPool(poolName, allocationSize, 0, 0);
 	DEBUG_ASSERTCRASH(pool && pool->getAllocationSize() == allocationSize, ("bad w3d pool"));
