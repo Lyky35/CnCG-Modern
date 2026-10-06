@@ -755,7 +755,15 @@ public:
 
 	void deleteInstance() 
 	{	
+		// GCC treats 'this' as nonnull and folds 'if (this)'; test via the value
+		// so a null pointer (legal on this legacy call pattern) really is skipped.
+#ifdef __GNUC__
+		void* self;
+		asm("" : "=r"(self) : "0"(this));
+		if (self)
+#else
 		if (this)
+#endif
 		{
 			MemoryPool *pool = this->getObjectMemoryPool(); // save this, since the dtor will nuke our vtbl
 			this->~MemoryPoolObject();	// it's virtual, so the right one will be called.
