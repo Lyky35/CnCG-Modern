@@ -120,6 +120,22 @@ static LONG WINAPI CrashDiagHandler(PEXCEPTION_POINTERS ep)
 	CONTEXT* c = ep->ContextRecord;
 	ULONG code = er->ExceptionCode;
 
+	// Pass-through for benign notification exceptions:
+	//  0x40010006 DBG_PRINTEXCEPTION_C (OutputDebugString)
+	//  0x4001000F DBG_PRINTEXCEPTION_WIDE_C
+	//  0x406D1388 thread name, 0x40010005 DBG_CONTROL_BREAK,
+	//  any WARNING-severity (0x4.......), and MSVC-style C++ throws
+	//  (0xE06D7363) which must reach the real EH machinery.
+	if (code == 0x40010006u || code == 0x4001000Fu || code == 0x406D1388u ||
+	    code == 0x40010005u) {
+		CloseHandle(h);
+		return EXCEPTION_CONTINUE_EXECUTION;
+	}
+	if (code == 0xE06D7363u || (code & 0xC0000000u) == 0x40000000u) {
+		CloseHandle(h);
+		return EXCEPTION_CONTINUE_SEARCH;
+	}
+
 	WriteStr(h, "--- exception ---\n");
 	WriteStr(h, "code="); WriteHexU(h, code);
 	WriteStr(h, " addr="); WriteHexU(h, (ULONG64)er->ExceptionAddress);
