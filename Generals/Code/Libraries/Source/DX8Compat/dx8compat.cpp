@@ -57,10 +57,10 @@ HRESULT __cdecl D3DXCreateTexture(
 	DWORD Usage, D3DFORMAT Format, D3DPOOL Pool,
 	VKTexture **ppTexture)
 {
-	(void)pDevice; (void)Width; (void)Height; (void)MipLevels;
-	(void)Usage; (void)Format; (void)Pool;
-	if (ppTexture) *ppTexture = NULL;
-	return D3DERR_NOTAVAILABLE;
+	if (!pDevice || !ppTexture) return D3DERR_INVALIDCALL;
+	*ppTexture = NULL;
+	// D3DX CreateTexture with explicit params is equivalent to the device call.
+	return pDevice->CreateTexture(Width, Height, MipLevels, Usage, Format, Pool, ppTexture);
 }
 
 HRESULT __cdecl D3DXCreateTextureFromFileExA(
