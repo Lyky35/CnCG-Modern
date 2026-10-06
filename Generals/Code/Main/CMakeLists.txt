@@ -43,7 +43,6 @@ if(WIN32)
         uuid
         odbc32
         odbccp32
-        $<$<NOT:$<BOOL:${DX8VK_BRIDGE}>>:d3d8>
         dinput8
         dxguid
         dsound

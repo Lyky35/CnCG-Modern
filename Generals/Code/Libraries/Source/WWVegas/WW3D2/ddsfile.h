@@ -27,7 +27,7 @@
 #include "ww3dformat.h"
 #include "wwstring.h"
 
-struct IDirect3DSurface8;
+struct VKSurface;
 
 // ----------------------------------------------------------------------------
 //
@@ -190,7 +190,7 @@ public:
 	WW3DFormat Get_Format() const { return Format; }
 
 	// Copy pixels to the destination surface.
-	void Copy_Level_To_Surface(unsigned level,IDirect3DSurface8* d3d_surface);
+	void Copy_Level_To_Surface(unsigned level,VKSurface* d3d_surface);
 	void Copy_Level_To_Surface(
 		unsigned level,
 		WW3DFormat dest_format, 

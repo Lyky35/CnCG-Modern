@@ -47,6 +47,10 @@
 //-----------------------------------------------------------------------------
 #include <stdlib.h>
 
+// Forward declarations for the native Vulkan backend resource classes.
+class VKRoot; class VKDevice; class VKVertexBuffer; class VKIndexBuffer;
+class VKBaseTexture; class VKTexture; class VKSurface; class VKSwapChain;
+
 #include "W3DDevice/GameClient/TerrainTex.h"
 #include "W3DDevice/GameClient/WorldHeightMap.h"
 #include "W3DDevice/GameClient/TileData.h"
@@ -85,7 +89,7 @@ int TerrainTextureClass::update(WorldHeightMap *htMap)
 {
 	// D3DTexture is our texture;
 
-	IDirect3DSurface8 *surface_level;
+	VKSurface *surface_level;
 	D3DSURFACE_DESC surface_desc;
 	D3DLOCKED_RECT locked_rect;
 	DX8_ErrorCode(D3DTexture->GetSurfaceLevel(0, &surface_level));
@@ -205,7 +209,7 @@ int TerrainTextureClass::update(WorldHeightMap *htMap)
 {
 	// D3DTexture is our texture;
 
-	IDirect3DSurface8 *surface_level;
+	VKSurface *surface_level;
 	D3DSURFACE_DESC surface_desc;
 	D3DLOCKED_RECT locked_rect;
 	DX8_ErrorCode(D3DTexture->GetSurfaceLevel(0, &surface_level));
@@ -359,7 +363,7 @@ int TerrainTextureClass::update256(WorldHeightMap *htMap)
 {
 	// D3DTexture is our texture;
 
-	IDirect3DSurface8 *surface_level;
+	VKSurface *surface_level;
 	D3DSURFACE_DESC surface_desc;
 	D3DLOCKED_RECT locked_rect;
 	DX8_ErrorCode(D3DTexture->GetSurfaceLevel(0, &surface_level));
@@ -846,7 +850,7 @@ int AlphaEdgeTextureClass::update(WorldHeightMap *htMap)
 {
 	// D3DTexture is our texture;
 
-	IDirect3DSurface8 *surface_level;
+	VKSurface *surface_level;
 	D3DSURFACE_DESC surface_desc;
 	D3DLOCKED_RECT locked_rect;
 	DX8_ErrorCode(D3DTexture->GetSurfaceLevel(0, &surface_level));

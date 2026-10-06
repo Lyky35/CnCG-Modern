@@ -11,6 +11,7 @@
 #define DX8COMPAT_H
 
 #include <d3d8.h>
+#include "VkNative.h"
 #include <string.h>
 #include <math.h>
 
@@ -302,32 +303,32 @@ LPCSTR __cdecl D3DXGetErrorStringA(HRESULT hr);
 /* ---- texture / surface / shader helpers (stubs, see dx8compat.cpp) ---- */
 
 HRESULT __cdecl D3DXCreateTexture(
-	IDirect3DDevice8 *pDevice,
+	VKDevice *pDevice,
 	unsigned int Width, unsigned int Height, unsigned int MipLevels,
 	DWORD Usage, D3DFORMAT Format, D3DPOOL Pool,
-	IDirect3DTexture8 **ppTexture);
+	VKTexture **ppTexture);
 
 HRESULT __cdecl D3DXCreateTextureFromFileExA(
-	IDirect3DDevice8 *pDevice,
+	VKDevice *pDevice,
 	LPCSTR pSrcFile,
 	unsigned int Width, unsigned int Height, unsigned int MipLevels,
 	DWORD Usage,
 	D3DFORMAT Format, D3DPOOL Pool,
 	DWORD Filter, DWORD MipFilter, DWORD ColorKey,
 	void *pSrcInfo, void *pPalette,
-	IDirect3DTexture8 **ppTexture);
+	VKTexture **ppTexture);
 
 HRESULT __cdecl D3DXFilterTexture(
-	IDirect3DBaseTexture8 *pTexture,
+	VKBaseTexture *pTexture,
 	const RECT *pSrcRect,
 	unsigned int SrcLevel,
 	DWORD Filter);
 
 HRESULT __cdecl D3DXLoadSurfaceFromSurface(
-	IDirect3DSurface8 *pDestSurface,
+	VKSurface *pDestSurface,
 	void *pDestPalette,
 	const RECT *pDestRect,
-	IDirect3DSurface8 *pSrcSurface,
+	VKSurface *pSrcSurface,
 	void *pSrcPalette,
 	const RECT *pSrcRect,
 	DWORD Filter,

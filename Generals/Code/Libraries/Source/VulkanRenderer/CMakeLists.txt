@@ -14,12 +14,11 @@ if(NOT Vulkan_FOUND AND EXISTS "${VULKAN_LOCAL_DIR}/vulkan/vulkan.h")
 endif()
 
 if(Vulkan_FOUND)
-    file(GLOB VULKAN_SOURCES *.cpp DX8Bridge/*.cpp)
+    file(GLOB VULKAN_SOURCES *.cpp)
     add_library(VulkanRenderer STATIC ${VULKAN_SOURCES})
     target_include_directories(VulkanRenderer PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/Shaders
-        ${CMAKE_CURRENT_SOURCE_DIR}/DX8Bridge
         ${Vulkan_INCLUDE_DIRS}
     )
     target_compile_definitions(VulkanRenderer PUBLIC VK_USE_PLATFORM_WIN32_KHR)
@@ -86,7 +85,6 @@ if(Vulkan_FOUND)
         add_dependencies(VulkanRenderer VulkanShaders)
         target_include_directories(VulkanRenderer PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
         target_compile_definitions(VulkanRenderer PUBLIC VULKAN_GENERATED_SHADERS=1)
-        set(DX8VK_BRIDGE ON CACHE INTERNAL "DX8->Vulkan bridge available")
     else()
         message(WARNING "glslc not found - VulkanRenderer will embed raw GLSL strings (non-functional shaders)")
     endif()

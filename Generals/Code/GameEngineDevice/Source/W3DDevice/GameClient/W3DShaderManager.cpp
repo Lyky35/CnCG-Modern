@@ -54,6 +54,10 @@
 //-----------------------------------------------------------------------------
 
 #include "dx8wrapper.h"
+
+// Forward declarations for the native Vulkan backend resource classes.
+class VKRoot; class VKDevice; class VKVertexBuffer; class VKIndexBuffer;
+class VKBaseTexture; class VKTexture; class VKSurface; class VKSwapChain;
 #include "assetmgr.h"
 #include "Lib/BaseType.h"
 #include "Common/file.h"
@@ -109,10 +113,10 @@ FilterTypes W3DShaderManager::m_currentFilter=FT_NULL_FILTER; ///< Last filter t
 Int W3DShaderManager::m_currentShaderPass;
 
 Bool W3DShaderManager::m_renderingToTexture = false;
-IDirect3DSurface8 *W3DShaderManager::m_oldRenderSurface=NULL;	///<previous render target
-IDirect3DTexture8 *W3DShaderManager::m_renderTexture=NULL;		///<texture into which rendering will be redirected.
-IDirect3DSurface8 *W3DShaderManager::m_newRenderSurface=NULL;	///<new render target inside m_renderTexture
-IDirect3DSurface8 *W3DShaderManager::m_oldDepthSurface=NULL;	///<previous depth buffer surface
+VKSurface *W3DShaderManager::m_oldRenderSurface=NULL;	///<previous render target
+VKTexture *W3DShaderManager::m_renderTexture=NULL;		///<texture into which rendering will be redirected.
+VKSurface *W3DShaderManager::m_newRenderSurface=NULL;	///<new render target inside m_renderTexture
+VKSurface *W3DShaderManager::m_oldDepthSurface=NULL;	///<previous depth buffer surface
 /*===========================================================================================*/
 /*=========      Screen Shaders	=============================================================*/
 /*===========================================================================================*/
@@ -186,12 +190,12 @@ Bool ScreenBWFilter::preRender(Bool &skipRender, CustomScenePassModes &scenePass
 
 Bool ScreenBWFilter::postRender(enum FilterModes mode, Coord2D &scrollDelta,Bool &doExtraRender)
 {
-	IDirect3DTexture8 * tex =	W3DShaderManager::endRenderToTexture();
+	VKTexture * tex =	W3DShaderManager::endRenderToTexture();
 	DEBUG_ASSERTCRASH(tex, ("Require rendered texture."));
 	if (!tex) return false;
 	if (!set(mode)) return false;
 
-	LPDIRECT3DDEVICE8 pDev=DX8Wrapper::_Get_D3D_Device8();
+	VKDevice* pDev=DX8Wrapper::_Get_D3D_Device8();
 
 	struct _TRANS_LIT_TEX_VERTEX {
 		D3DXVECTOR4 p;
@@ -375,12 +379,12 @@ Bool ScreenBWFilterDOT3::preRender(Bool &skipRender, CustomScenePassModes &scene
 
 Bool ScreenBWFilterDOT3::postRender(enum FilterModes mode, Coord2D &scrollDelta,Bool &doExtraRender)
 {
-	IDirect3DTexture8 * tex =	W3DShaderManager::endRenderToTexture();
+	VKTexture * tex =	W3DShaderManager::endRenderToTexture();
 	DEBUG_ASSERTCRASH(tex, ("Require rendered texture."));
 	if (!tex) return false;
 	if (!set(mode)) return false;
 
-	LPDIRECT3DDEVICE8 pDev=DX8Wrapper::_Get_D3D_Device8();
+	VKDevice* pDev=DX8Wrapper::_Get_D3D_Device8();
 
 	struct _TRANS_LIT_TEX_VERTEX {
 		D3DXVECTOR4 p;
@@ -624,7 +628,7 @@ Bool ScreenCrossFadeFilter::preRender(Bool &skipRender, CustomScenePassModes &sc
 
 Bool ScreenCrossFadeFilter::postRender(enum FilterModes mode, Coord2D &scrollDelta,Bool &doExtraRender)
 {
-	IDirect3DTexture8 * tex;
+	VKTexture * tex;
 
 	if (m_skipRender)
 	{
@@ -642,7 +646,7 @@ Bool ScreenCrossFadeFilter::postRender(enum FilterModes mode, Coord2D &scrollDel
 	if (!tex) return false;
 	if (!set(mode)) return false;
 
-	LPDIRECT3DDEVICE8 pDev=DX8Wrapper::_Get_D3D_Device8();
+	VKDevice* pDev=DX8Wrapper::_Get_D3D_Device8();
 
 	struct _TRANS_LIT_TEX_VERTEX {
 		D3DXVECTOR4 p;
@@ -806,12 +810,12 @@ Bool ScreenMotionBlurFilter::preRender(Bool &skipRender, CustomScenePassModes &s
 
 Bool ScreenMotionBlurFilter::postRender(enum FilterModes mode, Coord2D &scrollDelta,Bool &doExtraRender)
 {
-	IDirect3DTexture8 * tex =	W3DShaderManager::endRenderToTexture();
+	VKTexture * tex =	W3DShaderManager::endRenderToTexture();
 	DEBUG_ASSERTCRASH(tex, ("Require rendered texture."));
 	if (!tex) return false;
 	if (!set(mode)) return false;
 
-	LPDIRECT3DDEVICE8 pDev=DX8Wrapper::_Get_D3D_Device8();
+	VKDevice* pDev=DX8Wrapper::_Get_D3D_Device8();
 
 	Bool continueEffect = true;
 	struct _TRANS_LIT_TEX_VERTEX {
@@ -2537,7 +2541,7 @@ Bool W3DShaderManager::filterSetup(FilterTypes filter, enum FilterModes mode)
 /*Draws 2 triangles covering the viewport given the current render states*/
 void W3DShaderManager::drawViewport(Int color)
 {
-	LPDIRECT3DDEVICE8 pDev=DX8Wrapper::_Get_D3D_Device8();
+	VKDevice* pDev=DX8Wrapper::_Get_D3D_Device8();
 
 	struct _TRANS_LIT_TEX_VERTEX {
 		D3DXVECTOR4 p;
@@ -2617,7 +2621,7 @@ void W3DShaderManager::startRenderToTexture(void)
 /** Ends rendering to a texture.
  */
 //=============================================================================
-IDirect3DTexture8 *W3DShaderManager::endRenderToTexture(void)
+VKTexture *W3DShaderManager::endRenderToTexture(void)
 {	
 	DEBUG_ASSERTCRASH(m_renderingToTexture, ("Not rendering to texture."));
 	if (!m_renderingToTexture) return NULL;
@@ -2642,7 +2646,7 @@ IDirect3DTexture8 *W3DShaderManager::endRenderToTexture(void)
 /**Returns texture containing the image that was last rendered using any of the effects requiring render target
 textures.  Used mostly for cross-fading effects that need an unmodified version of the view before the effect
 was applied.  NOTE: This texture does not survive device reset.. so quit effect on reset!*/
-IDirect3DTexture8 *W3DShaderManager::getRenderTexture(void)
+VKTexture *W3DShaderManager::getRenderTexture(void)
 {
 	return m_renderTexture;
 }
@@ -2663,7 +2667,7 @@ ChipsetType W3DShaderManager::getChipset( void )
 		return (ChipsetType)TheGlobalData->m_chipSetType;
 
 	ChipsetType chip=DC_UNKNOWN;
-	IDirect3D8* d3d8Interface=DX8Wrapper::_Get_D3D8();
+	VKRoot* d3d8Interface=DX8Wrapper::_Get_D3D8();
 
 	if (d3d8Interface && DX8Wrapper::_Get_D3D_Device8())
 	{

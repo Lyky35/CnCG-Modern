@@ -29,6 +29,10 @@
 #define __HEIGHTMAP_H_
 
 #include "always.h"
+
+// Forward declarations for the native Vulkan backend resource classes.
+class VKRoot; class VKDevice; class VKVertexBuffer; class VKIndexBuffer;
+class VKBaseTexture; class VKTexture; class VKSurface; class VKSwapChain;
 #include "rendobj.h"
 #include "w3d_file.h"
 #include "dx8vertexbuffer.h"
@@ -271,7 +275,7 @@ protected:
 
 	DX8IndexBufferClass			*m_indexBuffer;	///<indices defining triangles in a VB tile.
 #ifdef PRE_TRANSFORM_VERTEX
-	IDirect3DVertexBuffer8 **m_xformedVertexBuffer;
+	VKVertexBuffer **m_xformedVertexBuffer;
 #endif
 	ShaderClass m_shaderClass; ///<shader or rendering state for heightmap
 	VertexMaterialClass	  	  *m_vertexMaterialClass;	///< vertex shader (lighting) for terrain

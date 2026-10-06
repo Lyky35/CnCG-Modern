@@ -35,6 +35,10 @@ static void drawFramerateBar(void);
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #include <stdlib.h>
+
+// Forward declarations for the native Vulkan backend resource classes.
+class VKRoot; class VKDevice; class VKVertexBuffer; class VKIndexBuffer;
+class VKBaseTexture; class VKTexture; class VKSurface; class VKSwapChain;
 #include <windows.h>
 #include <io.h>
 #include <time.h>
@@ -2855,7 +2859,7 @@ void W3DDisplay::takeScreenShot(void)
 
 	// Lock front buffer and copy
 
-	IDirect3DSurface8 *fb;
+	VKSurface *fb;
 	fb=DX8Wrapper::_Get_DX8_Front_Buffer();
 	D3DSURFACE_DESC desc;
 	fb->GetDesc(&desc);

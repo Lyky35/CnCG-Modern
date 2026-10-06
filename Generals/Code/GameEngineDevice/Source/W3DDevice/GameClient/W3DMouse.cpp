@@ -30,6 +30,10 @@
 
 #include "Common/GameMemory.h"
 
+// Forward declarations for the native Vulkan backend resource classes.
+class VKRoot; class VKDevice; class VKVertexBuffer; class VKIndexBuffer;
+class VKBaseTexture; class VKTexture; class VKSurface; class VKSwapChain;
+
 #ifndef D3DCURSOR_IMMEDIATE_UPDATE
 #define D3DCURSOR_IMMEDIATE_UPDATE 0x00000001L
 #endif
@@ -118,7 +122,7 @@ W3DMouse::W3DMouse( void )
 
 W3DMouse::~W3DMouse( void )
 {
-	LPDIRECT3DDEVICE8 m_pDev=DX8Wrapper::_Get_D3D_Device8();
+	VKDevice* m_pDev=DX8Wrapper::_Get_D3D_Device8();
 
 	if (m_pDev)
 	{
@@ -396,7 +400,7 @@ void W3DMouse::setCursor( MouseCursor cursor )
 	{
 		SetCursor(NULL);	//Kill Windows Cursor
 
-		LPDIRECT3DDEVICE8 m_pDev=DX8Wrapper::_Get_D3D_Device8();
+		VKDevice* m_pDev=DX8Wrapper::_Get_D3D_Device8();
 		Bool doImageChange=FALSE;
 
 		if (m_pDev != NULL)
@@ -492,7 +496,7 @@ void W3DMouse::draw(void)
 	{
 		//called from upate thread or rendering loop.  Tells D3D where
 		//to draw the mouse cursor.
-		LPDIRECT3DDEVICE8 m_pDev=DX8Wrapper::_Get_D3D_Device8();
+		VKDevice* m_pDev=DX8Wrapper::_Get_D3D_Device8();
 		if (m_pDev)
 		{	m_pDev->ShowCursor(TRUE);	//Enable DX8 cursor
 

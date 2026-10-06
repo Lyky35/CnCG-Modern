@@ -40,9 +40,6 @@
 //#define CREATE_DX8_MULTI_THREADED
 
 #include "dx8wrapper.h"
-#ifdef VULKAN_DX8_BRIDGE
-#include "dx8vk.h"
-#endif
 #include "dx8fvf.h"
 #include "dx8vertexbuffer.h"
 #include "dx8indexbuffer.h"
@@ -112,17 +109,17 @@ D3DMATRIX						DX8Wrapper::old_prj;
 bool								DX8Wrapper::world_identity;
 unsigned							DX8Wrapper::RenderStates[256];
 unsigned							DX8Wrapper::TextureStageStates[MAX_TEXTURE_STAGES][32];
-IDirect3DBaseTexture8 *		DX8Wrapper::Textures[MAX_TEXTURE_STAGES];
+VKBaseTexture *		DX8Wrapper::Textures[MAX_TEXTURE_STAGES];
 RenderStateStruct				DX8Wrapper::render_state;
 unsigned							DX8Wrapper::render_state_changed;
 
 bool								DX8Wrapper::FogEnable									= false;
 D3DCOLOR							DX8Wrapper::FogColor										= 0;
 
-IDirect3D8 *					DX8Wrapper::D3DInterface								= NULL;
-IDirect3DDevice8 *			DX8Wrapper::D3DDevice									= NULL;
-IDirect3DSurface8 *			DX8Wrapper::CurrentRenderTarget						= NULL;
-IDirect3DSurface8 *			DX8Wrapper::DefaultRenderTarget						= NULL;
+VKRoot *					DX8Wrapper::D3DInterface								= NULL;
+VKDevice *			DX8Wrapper::D3DDevice									= NULL;
+VKSurface *			DX8Wrapper::CurrentRenderTarget						= NULL;
+VKSurface *			DX8Wrapper::DefaultRenderTarget						= NULL;
 
 unsigned							DX8Wrapper::matrix_changes								= 0;
 unsigned							DX8Wrapper::material_changes							= 0;
@@ -249,17 +246,13 @@ bool DX8Wrapper::Init(void * hwnd)
 	/*
 	** Create the D3D interface object
 	*/
-#if defined(VULKAN_DX8_BRIDGE)
-	// DX8 runtime fully replaced by the Vulkan device bridge (DX8Bridge/dx8vk.cpp).
-	D3DInterface = DX8Vk_CreateD3D8();
-	WWDEBUG_SAY(("DX8Vk: CreateD3D8 -> %p\n", D3DInterface));
+	// Native Vulkan backend (VulkanRenderer/VkNative.cpp) - no DX8 runtime involved.
+	D3DInterface = VKRoot::Create();
+	WWDEBUG_SAY(("VkNative: Create -> %p\n", D3DInterface));
 	if (!D3DInterface) {
-		WWDEBUG_SAY(("DX8Vk: failed to create Vulkan bridge\n"));
+		WWDEBUG_SAY(("VkNative: failed to create backend\n"));
 		return false;
 	}
-#else
-	D3DInterface = Direct3DCreate8(D3D_SDK_VERSION);		// TODO: handle failure cases...
-#endif
 	if (!D3DInterface)
 		return false;
 	IsInitted = true;	
@@ -274,7 +267,7 @@ bool DX8Wrapper::Init(void * hwnd)
 void DX8Wrapper::Shutdown(void)
 {
 	if (D3DDevice) {
-		Set_Render_Target ((IDirect3DSurface8 *)NULL);
+		Set_Render_Target ((VKSurface *)NULL);
 		Release_Device();
 	}
 
@@ -1977,7 +1970,7 @@ void DX8Wrapper::Apply_Render_State_Changes()
 	render_state_changed&=((unsigned)WORLD_IDENTITY|(unsigned)VIEW_IDENTITY);
 }
 
-IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture(
+VKTexture * DX8Wrapper::_Create_DX8_Texture(
 	unsigned int width, 
 	unsigned int height,
 	WW3DFormat format, 
@@ -1987,7 +1980,7 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture(
 {
 	DX8_THREAD_ASSERT();
 	DX8_Assert();
-	IDirect3DTexture8 *texture = NULL;
+	VKTexture *texture = NULL;
 
 	// Paletted textures not supported!
 	WWASSERT(format!=D3DFMT_P8);
@@ -2044,13 +2037,13 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture(
 	return texture;
 }
 
-IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture(
+VKTexture * DX8Wrapper::_Create_DX8_Texture(
 	const char *filename, 
 	TextureClass::MipCountType mip_level_count)
 {
 	DX8_THREAD_ASSERT();
 	DX8_Assert();
-	IDirect3DTexture8 *texture = NULL;
+	VKTexture *texture = NULL;
 
 	// NOTE: If the original image format is not supported as a texture format, it will
 	// automatically be converted to an appropriate format.
@@ -2094,13 +2087,13 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture(
 	return texture;
 }
 
-IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture(
-	IDirect3DSurface8 *surface,
+VKTexture * DX8Wrapper::_Create_DX8_Texture(
+	VKSurface *surface,
 	TextureClass::MipCountType mip_level_count)
 {
 	DX8_THREAD_ASSERT();
 	DX8_Assert();
-	IDirect3DTexture8 *texture = NULL;
+	VKTexture *texture = NULL;
 
 	D3DSURFACE_DESC surface_desc;
 	::ZeroMemory(&surface_desc, sizeof(D3DSURFACE_DESC));
@@ -2112,7 +2105,7 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture(
 	texture = _Create_DX8_Texture(surface_desc.Width, surface_desc.Height, format, mip_level_count);
 
 	// Copy the surface to the texture
-	IDirect3DSurface8 *tex_surface = NULL;
+	VKSurface *tex_surface = NULL;
 	texture->GetSurfaceLevel(0, &tex_surface);
 	DX8_ErrorCode(D3DXLoadSurfaceFromSurface(tex_surface, NULL, NULL, surface, NULL, NULL, D3DX_FILTER_BOX, 0));
 	tex_surface->Release();
@@ -2126,12 +2119,12 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture(
 
 }
 
-IDirect3DSurface8 * DX8Wrapper::_Create_DX8_Surface(unsigned int width, unsigned int height, WW3DFormat format)
+VKSurface * DX8Wrapper::_Create_DX8_Surface(unsigned int width, unsigned int height, WW3DFormat format)
 {
 	DX8_THREAD_ASSERT();
 	DX8_Assert();
 
-	IDirect3DSurface8 *surface = NULL;
+	VKSurface *surface = NULL;
 
 	// Paletted surfaces not supported!
 	WWASSERT(format!=D3DFMT_P8);
@@ -2141,7 +2134,7 @@ IDirect3DSurface8 * DX8Wrapper::_Create_DX8_Surface(unsigned int width, unsigned
 	return surface;
 }
 
-IDirect3DSurface8 * DX8Wrapper::_Create_DX8_Surface(const char *filename_)
+VKSurface * DX8Wrapper::_Create_DX8_Surface(const char *filename_)
 {
 	DX8_THREAD_ASSERT();
 	DX8_Assert();
@@ -2155,7 +2148,7 @@ IDirect3DSurface8 * DX8Wrapper::_Create_DX8_Surface(const char *filename_)
 	// the file data and use D3DXLoadSurfaceFromFile. This is a horrible hack, but it saves us
 	// having to write file loaders. Will fix this when D3DX provides us with the right functions.
 	// Create a surface the size of the file image data
-	IDirect3DSurface8 *surface = NULL;	
+	VKSurface *surface = NULL;	
 
 	{
 		file_auto_ptr myfile(_TheFileFactory,filename_);	
@@ -2340,14 +2333,14 @@ void DX8Wrapper::Set_Light_Environment(LightEnvironmentClass* light_env)
 */
 }
 
-IDirect3DSurface8 * DX8Wrapper::_Get_DX8_Front_Buffer()
+VKSurface * DX8Wrapper::_Get_DX8_Front_Buffer()
 {
 	DX8_THREAD_ASSERT();
 	D3DDISPLAYMODE mode;
 
 	DX8CALL(GetDisplayMode(&mode));
 
-	IDirect3DSurface8 * fb=NULL;
+	VKSurface * fb=NULL;
 
 	DX8CALL(CreateImageSurface(mode.Width,mode.Height,D3DFMT_A8R8G8B8,&fb));
 
@@ -2359,7 +2352,7 @@ SurfaceClass * DX8Wrapper::_Get_DX8_Back_Buffer(unsigned int num)
 {
 	DX8_THREAD_ASSERT();	
 
-	IDirect3DSurface8 * bb;
+	VKSurface * bb;
 	SurfaceClass *surf=NULL;
 	DX8CALL(GetBackBuffer(num,D3DBACKBUFFER_TYPE_MONO,&bb));
 	if (bb)
@@ -2464,7 +2457,7 @@ DX8Wrapper::Set_Render_Target (TextureClass * texture)
 }
 
 void
-DX8Wrapper::Set_Render_Target(IDirect3DSwapChain8 *swap_chain)
+DX8Wrapper::Set_Render_Target(VKSwapChain *swap_chain)
 {
 	DX8_THREAD_ASSERT();
 	WWASSERT (swap_chain != NULL);
@@ -2472,7 +2465,7 @@ DX8Wrapper::Set_Render_Target(IDirect3DSwapChain8 *swap_chain)
 	//
 	//	Get the back buffer for the swap chain
 	//
-	LPDIRECT3DSURFACE8 render_target = NULL;
+	VKSurface* render_target = NULL;
 	swap_chain->GetBackBuffer (0, D3DBACKBUFFER_TYPE_MONO, &render_target);
 	
 	//
@@ -2492,7 +2485,7 @@ DX8Wrapper::Set_Render_Target(IDirect3DSwapChain8 *swap_chain)
 }
 
 void
-DX8Wrapper::Set_Render_Target(IDirect3DSurface8 *render_target)
+DX8Wrapper::Set_Render_Target(VKSurface *render_target)
 {
 	DX8_THREAD_ASSERT();
 	DX8_Assert();
@@ -2500,7 +2493,7 @@ DX8Wrapper::Set_Render_Target(IDirect3DSurface8 *render_target)
 	//
 	//	We'll need the depth buffer later...
 	//
-	IDirect3DSurface8 *depth_buffer = NULL;
+	VKSurface *depth_buffer = NULL;
 	DX8CALL(GetDepthStencilSurface (&depth_buffer));
 
 	//
@@ -2569,7 +2562,7 @@ DX8Wrapper::Set_Render_Target(IDirect3DSurface8 *render_target)
 }
 
 
-IDirect3DSwapChain8 *
+VKSwapChain *
 DX8Wrapper::Create_Additional_Swap_Chain (HWND render_window)
 {
 	DX8_Assert();
@@ -2593,7 +2586,7 @@ DX8Wrapper::Create_Additional_Swap_Chain (HWND render_window)
 	//
 	//	Create the swap chain
 	//
-	IDirect3DSwapChain8 *swap_chain = NULL;
+	VKSwapChain *swap_chain = NULL;
 	DX8CALL(CreateAdditionalSwapChain(&params, &swap_chain));
 	return swap_chain;
 }

@@ -52,10 +52,10 @@ HRESULT __cdecl D3DXGetErrorStringA(HRESULT hr, LPSTR pBuffer, DWORD BufferLen)
 }
 
 HRESULT __cdecl D3DXCreateTexture(
-	IDirect3DDevice8 *pDevice,
+	VKDevice *pDevice,
 	unsigned int Width, unsigned int Height, unsigned int MipLevels,
 	DWORD Usage, D3DFORMAT Format, D3DPOOL Pool,
-	IDirect3DTexture8 **ppTexture)
+	VKTexture **ppTexture)
 {
 	(void)pDevice; (void)Width; (void)Height; (void)MipLevels;
 	(void)Usage; (void)Format; (void)Pool;
@@ -64,14 +64,14 @@ HRESULT __cdecl D3DXCreateTexture(
 }
 
 HRESULT __cdecl D3DXCreateTextureFromFileExA(
-	IDirect3DDevice8 *pDevice,
+	VKDevice *pDevice,
 	LPCSTR pSrcFile,
 	unsigned int Width, unsigned int Height, unsigned int MipLevels,
 	DWORD Usage,
 	D3DFORMAT Format, D3DPOOL Pool,
 	DWORD Filter, DWORD MipFilter, DWORD ColorKey,
 	void *pSrcInfo, void *pPalette,
-	IDirect3DTexture8 **ppTexture)
+	VKTexture **ppTexture)
 {
 	(void)pDevice; (void)pSrcFile; (void)Width; (void)Height; (void)MipLevels;
 	(void)Usage; (void)Format; (void)Pool; (void)Filter; (void)MipFilter;
@@ -81,7 +81,7 @@ HRESULT __cdecl D3DXCreateTextureFromFileExA(
 }
 
 HRESULT __cdecl D3DXFilterTexture(
-	IDirect3DBaseTexture8 *pTexture,
+	VKBaseTexture *pTexture,
 	const RECT *pSrcRect,
 	unsigned int SrcLevel,
 	DWORD Filter)
@@ -91,8 +91,8 @@ HRESULT __cdecl D3DXFilterTexture(
 }
 
 static HRESULT surface_to_surface_software(
-	IDirect3DSurface8 *pDest, const RECT *pDestRect,
-	IDirect3DSurface8 *pSrc, const RECT *pSrcRect,
+	VKSurface *pDest, const RECT *pDestRect,
+	VKSurface *pSrc, const RECT *pSrcRect,
 	D3DCOLOR colorkey)
 {
 	D3DSURFACE_DESC desc, sdesc;
@@ -135,10 +135,10 @@ static HRESULT surface_to_surface_software(
 }
 
 HRESULT __cdecl D3DXLoadSurfaceFromSurface(
-	IDirect3DSurface8 *pDestSurface,
+	VKSurface *pDestSurface,
 	void *pDestPalette,
 	const RECT *pDestRect,
-	IDirect3DSurface8 *pSrcSurface,
+	VKSurface *pSrcSurface,
 	void *pSrcPalette,
 	const RECT *pSrcRect,
 	DWORD Filter,

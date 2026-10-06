@@ -47,6 +47,10 @@
 //-----------------------------------------------------------------------------
 #include "W3DDevice/GameClient/HeightMap.h"
 
+// Forward declarations for the native Vulkan backend resource classes.
+class VKRoot; class VKDevice; class VKVertexBuffer; class VKIndexBuffer;
+class VKBaseTexture; class VKTexture; class VKSurface; class VKSwapChain;
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -2736,7 +2740,7 @@ Int HeightMapRenderObjClass::initHeightData(Int x, Int y, WorldHeightMap *pMap, 
 		DX8Wrapper::_Get_D3D_Device8()->GetCreationParameters(&parms);
 		Bool softwareVertexProcessing = 0!=(parms.BehaviorFlags&D3DCREATE_SOFTWARE_VERTEXPROCESSING);
 		if (m_xformedVertexBuffer == NULL && softwareVertexProcessing) {
-			m_xformedVertexBuffer = NEW IDirect3DVertexBuffer8*[m_numVertexBufferTiles];
+			m_xformedVertexBuffer = NEW VKVertexBuffer*[m_numVertexBufferTiles];
 		}
 #endif
 

@@ -66,7 +66,7 @@ enum {
 //
 // ----------------------------------------------------------------------------
 
-void DX8Caps::Init_Caps(IDirect3DDevice8* D3DDevice)
+void DX8Caps::Init_Caps(VKDevice* D3DDevice)
 {
 	D3DDevice->SetRenderState(D3DRS_SOFTWAREVERTEXPROCESSING,TRUE);
 	DX8CALL(GetDeviceCaps(&swVPCaps));
@@ -87,7 +87,7 @@ void DX8Caps::Init_Caps(IDirect3DDevice8* D3DDevice)
 //
 // ----------------------------------------------------------------------------
 
-void DX8Caps::Compute_Caps(D3DFORMAT display_format, D3DFORMAT depth_stencil_format, IDirect3DDevice8* D3DDevice)
+void DX8Caps::Compute_Caps(D3DFORMAT display_format, D3DFORMAT depth_stencil_format, VKDevice* D3DDevice)
 {
 	const D3DADAPTER_IDENTIFIER8& adapter_id=DX8Wrapper::Get_Current_Adapter_Identifier();
 

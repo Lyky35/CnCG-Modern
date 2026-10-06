@@ -44,13 +44,14 @@
 #define DX8CAPS_H
 
 #include "always.h"
+#include "VkNative.h"
 #include "ww3dformat.h"
 #include <d3d8.h>
 
 class DX8Caps
 {
 public:
-	static void Compute_Caps(D3DFORMAT display_format, D3DFORMAT depth_stencil_format, IDirect3DDevice8* D3DDevice);
+	static void Compute_Caps(D3DFORMAT display_format, D3DFORMAT depth_stencil_format, VKDevice* D3DDevice);
 	static bool Use_TnL() { return UseTnL; };	
 	static bool Support_DXTC() { return SupportDXTC; }
 	static bool Support_Gamma() { return supportGamma; }
@@ -79,7 +80,7 @@ public:
 	static D3DCAPS8 const & Get_Default_Caps() { return (UseTnL?hwVPCaps:swVPCaps); };
 
 private:
-	static void Init_Caps(IDirect3DDevice8* D3DDevice);
+	static void Init_Caps(VKDevice* D3DDevice);
 	static void Check_Texture_Format_Support(D3DFORMAT display_format,const D3DCAPS8& caps);
 	static void Check_Texture_Compression_Support(const D3DCAPS8& caps);
 	static void Check_Bumpmap_Support(const D3DCAPS8& caps);

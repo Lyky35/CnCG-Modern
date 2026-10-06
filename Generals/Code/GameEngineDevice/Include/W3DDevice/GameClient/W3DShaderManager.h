@@ -38,6 +38,10 @@
 
 #include "WW3D2/texture.h"
 
+// Forward declarations for the native Vulkan backend resource classes.
+class VKRoot; class VKDevice; class VKVertexBuffer; class VKIndexBuffer;
+class VKBaseTexture; class VKTexture; class VKSurface; class VKSwapChain;
+
 enum FilterModes : int;
 enum FilterTypes : int;
 enum CustomScenePassModes : int;
@@ -101,8 +105,8 @@ public:
 	// Support routines for filter methods.
 	static Bool canRenderToTexture(void) { return (m_oldRenderSurface && m_newRenderSurface);}
 	static void startRenderToTexture(void); ///< Sets render target to texture.
-	static IDirect3DTexture8 * endRenderToTexture(void); ///< Ends render to texture, & returns texture.
-	static IDirect3DTexture8 * getRenderTexture(void);	///< returns last used render target texture
+	static VKTexture * endRenderToTexture(void); ///< Ends render to texture, & returns texture.
+	static VKTexture * getRenderTexture(void);	///< returns last used render target texture
 	static void drawViewport(Int color);	///<draws 2 triangles covering the current tactical viewport
 
 
@@ -115,10 +119,10 @@ protected:
 	static FilterTypes m_currentFilter; ///< Last filter that was set.
 	// Info for a render to texture surface for special effects.
 	static Bool m_renderingToTexture;
-	static IDirect3DSurface8 *m_oldRenderSurface;	///<previous render target
-	static IDirect3DTexture8 *m_renderTexture;		///<texture into which rendering will be redirected.
-	static IDirect3DSurface8 *m_newRenderSurface;	///<new render target inside m_renderTexture
-	static IDirect3DSurface8 *m_oldDepthSurface;	///<previous depth buffer surface
+	static VKSurface *m_oldRenderSurface;	///<previous render target
+	static VKTexture *m_renderTexture;		///<texture into which rendering will be redirected.
+	static VKSurface *m_newRenderSurface;	///<new render target inside m_renderTexture
+	static VKSurface *m_oldDepthSurface;	///<previous depth buffer surface
 
 
 };
