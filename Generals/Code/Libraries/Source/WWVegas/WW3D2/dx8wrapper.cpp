@@ -550,8 +550,7 @@ void DX8Wrapper::Enumerate_Devices()
 	DX8_Assert();
 
 	int adapter_count = D3DInterface->GetAdapterCount();
-	WWDEBUG_SAY(("DX8Vk: Enumerate_Devices adapter_count=%d
-", adapter_count));
+	WWDEBUG_SAY(("DX8Vk: Enumerate_Devices adapter_count=%d\n", adapter_count));
 	for (int adapter_index=0; adapter_index<adapter_count; adapter_index++) {
 		
 		D3DADAPTER_IDENTIFIER8 id;
@@ -621,8 +620,7 @@ void DX8Wrapper::Enumerate_Devices()
 			** Add the render device to our table
 			*/
 			_RenderDeviceDescriptionTable.Add(desc);
-			WWDEBUG_SAY(("DX8Vk: adapter %d added; name_count=%d desc_count=%d
-",
+			WWDEBUG_SAY(("DX8Vk: adapter %d added; name_count=%d desc_count=%d\n",
 				adapter_index, _RenderDeviceNameTable.Count(), _RenderDeviceDescriptionTable.Count()));
 		}
 	}
