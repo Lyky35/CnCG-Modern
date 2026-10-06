@@ -3481,6 +3481,18 @@ void initMemoryManager()
 #endif
 	{
 		DEBUG_CRASH(("Wrong operator new/delete linked in! Fix this...\n"));
+		{
+			extern void CrashDiagMarker(const char* msg);
+			char buf[128];
+			wsprintfA(buf, "linktest FAILED: got=%d expected=%d override=%d",
+				theLinkTester,
+#ifdef MEMORYPOOL_OVERRIDE_MALLOC
+				10, (theLinkTester==10?1:0));
+#else
+				6, 0);
+#endif
+			CrashDiagMarker(buf);
+		}
 		exit(-1);
 	}
 
