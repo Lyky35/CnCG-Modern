@@ -43,7 +43,7 @@
 
 //-------------------------------------------------------------------------
 
-#if defined(_DEBUG) || defined(_INTERNAL)
+#if defined(_DEBUG) || defined(_INTERNAL) || defined(DEBUG_LOGGING)
 
 #define CASE(x) case (x): return #x;
 

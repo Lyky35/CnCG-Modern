@@ -102,6 +102,7 @@ void qr2_buffer_add(qr2_buffer_t buffer, const char *keyValuePair);
 void qr2_buffer_add_int(qr2_buffer_t buffer, int value);
 void qr2_keybuffer_add(qr2_keybuffer_t keyBuffer, int key);
 void qr2_register_key(int key, const char *name);
+extern const char* qr2_registered_key_list[];
 
 /* ------------------------------------------------------------------------ */
 /* Chat SDK surface - stub declarations                                      */

@@ -32,6 +32,9 @@ static void dx8vk_log(const char* fmt, ...)
     va_end(ap);
     OutputDebugStringA("[dx8vk] ");
     OutputDebugStringA(buf);
+    static FILE* lf = NULL;
+    if (!lf) lf = fopen("dx8vk.log", "a");
+    if (lf) { fprintf(lf, "[dx8vk] %s\n", buf); fflush(lf); }
 }
 
 static void dx8vk_log_once(const char* tag, const char* fmt, ...)
@@ -1764,8 +1767,10 @@ static HRESULT dx8rb_GetAdapterIdentifier(void* self, UINT a, DWORD flags, void*
 static UINT dx8rb_GetAdapterModeCount(void* self, UINT a) { (void)self; (void)a; return 1; }
 static HRESULT dx8rb_EnumAdapterModes(void* self, UINT a, UINT m, void* p)
 { (void)self; (void)a; (void)m; D3DDISPLAYMODE* d = (D3DDISPLAYMODE*)p; if (!d) return D3DERR_INVALIDCALL;
-  RECT rc; if (!GetClientRect(g->hwnd, &rc)) { rc.right = 1280; rc.bottom = 720; }
-  d->Width = rc.right; d->Height = rc.bottom; d->RefreshRate = 60; d->Format = D3DFMT_X8R8G8B8; return D3D_OK; }
+  LONG w = GetSystemMetrics(SM_CXSCREEN), h = GetSystemMetrics(SM_CYSCREEN);
+  if (g && g->hwnd) { RECT rc; if (GetClientRect(g->hwnd, &rc) && rc.right > 0 && rc.bottom > 0) { w = rc.right; h = rc.bottom; } }
+  if (w <= 0) w = 1280; if (h <= 0) h = 720;
+  d->Width = (UINT)w; d->Height = (UINT)h; d->RefreshRate = 60; d->Format = D3DFMT_X8R8G8B8; return D3D_OK; }
 static HRESULT dx8rb_GetAdapterDisplayMode(void* self, UINT a, void* p) { return dx8rb_EnumAdapterModes(self, a, 0, p); }
 static HRESULT dx8rb_CheckDeviceType(void* self, UINT a, int devType, D3DFORMAT display, D3DFORMAT back, WINBOOL windowed)
 { (void)self; (void)a; (void)devType; (void)display; (void)back; (void)windowed; return D3D_OK; }

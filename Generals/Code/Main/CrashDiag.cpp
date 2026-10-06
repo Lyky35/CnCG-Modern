@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <exception>
 #include <typeinfo>
+#include <cxxabi.h>
+#include <csignal>
 #include <stdlib.h>
 
 static ULONG64 g_imageBase = 0;
@@ -106,6 +108,9 @@ static void LogFrame(HANDLE h, const char* tag, ULONG64 addr)
 	WriteHexU(h, addr);
 }
 
+static void DumpModules(HANDLE h);
+static void CrashDiagUnwindAndScrape(HANDLE h, CONTEXT* c);
+
 static LONG WINAPI CrashDiagHandler(PEXCEPTION_POINTERS ep)
 {
 	HANDLE h = OpenLogRaw();
@@ -134,52 +139,8 @@ static LONG WINAPI CrashDiagHandler(PEXCEPTION_POINTERS ep)
 	WriteStr(h, "  r8="); WriteHexU(h, c->R8);
 	WriteStr(h, "  r9="); WriteHexU(h, c->R9);
 
-	// Proper unwind via ntdll's table-based unwinder.
-	typedef PRUNTIME_FUNCTION (WINAPI *LookupFn)(ULONG64, PULONG64, PVOID);
-	typedef VOID (WINAPI *UnwindFn)(ULONG, ULONG64, ULONG64, PRUNTIME_FUNCTION,
-	                                PCONTEXT, PULONG64, PVOID, PVOID);
-	HMODULE ntdll = GetModuleHandleA("ntdll.dll");
-	LookupFn lookup = (LookupFn)GetProcAddress(ntdll, "RtlLookupFunctionEntry");
-	UnwindFn unwind = (UnwindFn)GetProcAddress(ntdll, "RtlVirtualUnwind");
-	BOOL unwound = FALSE;
-	if (lookup && unwind) {
-		CONTEXT cur = *c;
-		for (int i = 0; i < 40; ++i) {
-			ULONG64 ib = 0;
-			PRUNTIME_FUNCTION rf = lookup(cur.Rip, &ib, NULL);
-			if (!rf) break;
-			ULONG64 est = 0;
-			unwind(0, ib, cur.Rip, rf, &cur, &est, NULL, NULL);
-			if (!cur.Rip) break;
-			unwound = TRUE;
-			LogFrame(h, "  frame", cur.Rip);
-		}
-	}
-	if (!unwound) {
-		ULONG64 rbp = c->Rbp;
-		for (int i = 0; i < 80; ++i) {
-			if (rbp & 7) break;
-			if (!IsReadable(rbp, 16)) break;
-			ULONG64 nextRbp = *(ULONG64*)rbp;
-			ULONG64 retAddr = *(ULONG64*)(rbp + 8);
-			if (nextRbp <= rbp) break;
-			LogFrame(h, "  frame", retAddr);
-			rbp = nextRbp;
-		}
-		WriteStr(h, "  stack scrape (RTS.exe code addresses only):\n");
-		ULONG64 sp = c->Rsp;
-		ULONG64 prev = 0;
-		int printed = 0;
-		for (ULONG64 a = sp; a < sp + 0x4000 && printed < 48; a += 8) {
-			if (!IsReadable(a, 8)) break;
-			ULONG64 v = *(ULONG64*)a;
-			if (v > g_imageBase + 0x1000 && v < g_imageBase + g_imageSize && v != prev) {
-				LogFrame(h, "    *", v);
-				prev = v;
-				++printed;
-			}
-		}
-	}
+	CrashDiagUnwindAndScrape(h, c);
+	DumpModules(h);
 	CloseHandle(h);
 	return EXCEPTION_EXECUTE_HANDLER;
 }
@@ -203,6 +164,93 @@ static LONG WINAPI CrashDiagUef(_EXCEPTION_POINTERS* ep)
 #include <stdlib.h>
 #include <malloc.h>
 
+static void DumpModules(HANDLE h)
+{
+	WriteStr(h, "  modules:\n");
+	HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetCurrentProcessId());
+	if (snap == INVALID_HANDLE_VALUE) return;
+	MODULEENTRY32 me; me.dwSize = sizeof(me);
+	if (Module32First(snap, &me)) {
+		char line[300];
+		do {
+			wsprintfA(line, "    %s ", me.szModule);
+			WriteStr(h, line);
+			WriteHexU(h, (ULONG64)me.modBaseAddr);
+		} while (Module32Next(snap, &me));
+	}
+	CloseHandle(snap);
+}
+
+static void CrashDiagUnwindAndScrape(HANDLE h, CONTEXT* c)
+{
+	typedef PRUNTIME_FUNCTION (WINAPI *LookupFn)(ULONG64, PULONG64, PVOID);
+	typedef VOID (WINAPI *UnwindFn)(ULONG, ULONG64, ULONG64, PRUNTIME_FUNCTION,
+	                                PCONTEXT, PULONG64, PVOID, PVOID);
+	HMODULE ntdll = GetModuleHandleA("ntdll.dll");
+	LookupFn lookup = (LookupFn)GetProcAddress(ntdll, "RtlLookupFunctionEntry");
+	UnwindFn unwind = (UnwindFn)GetProcAddress(ntdll, "RtlVirtualUnwind");
+	if (lookup && unwind) {
+		CONTEXT cur = *c;
+		for (int i = 0; i < 40; ++i) {
+			ULONG64 ib = 0;
+			PRUNTIME_FUNCTION rf = lookup(cur.Rip, &ib, NULL);
+			if (!rf) break;
+			ULONG64 est = 0;
+			unwind(0, ib, cur.Rip, rf, &cur, &est, NULL, NULL);
+			if (!cur.Rip) break;
+			LogFrame(h, "  frame", cur.Rip);
+		}
+	}
+	WriteStr(h, "  stack scrape (RTS.exe code addresses only):\n");
+	ULONG64 sp = c->Rsp;
+	ULONG64 prev = 0;
+	int printed = 0;
+	for (ULONG64 a = sp; a < sp + 0x4000 && printed < 48; a += 8) {
+		if (!IsReadable(a, 8)) break;
+		ULONG64 v = *(ULONG64*)a;
+		if (v > g_imageBase + 0x1000 && v < g_imageBase + g_imageSize && v != prev) {
+			LogFrame(h, "    *", v);
+			prev = v;
+			++printed;
+		}
+	}
+}
+
+static void CrashDiagTerminateHandler()
+{
+	HANDLE h = OpenLogRaw();
+	if (h != INVALID_HANDLE_VALUE) {
+		WriteStr(h, "=== TERMINATE: uncaught C++ exception ===\n");
+		try { throw; }
+		catch (const std::exception& e) {
+			WriteStr(h, "  std::exception: "); WriteStr(h, e.what()); WriteStr(h, "\n");
+		}
+		catch (...) {
+			const std::type_info* ti = abi::__cxa_current_exception_type();
+			WriteStr(h, "  unknown exception, type: ");
+			WriteStr(h, (ti && ti->name()) ? ti->name() : "?");
+			WriteStr(h, "\n");
+		}
+		CONTEXT c; RtlCaptureContext(&c);
+		CrashDiagUnwindAndScrape(h, &c);
+		DumpModules(h);
+		CloseHandle(h);
+	}
+	abort();
+}
+
+static void __cdecl CrashDiagSignalHandler(int sig)
+{
+	HANDLE h = OpenLogRaw();
+	if (h != INVALID_HANDLE_VALUE) {
+		char line[64];
+		wsprintfA(line, "=== FATAL SIGNAL %d ===\n", sig);
+		WriteStr(h, line);
+		CloseHandle(h);
+	}
+	_exit(0x2000 + sig);
+}
+
 __attribute__((constructor(101)))
 static void CrashDiagCtor(void)
 {
@@ -212,6 +260,11 @@ static void CrashDiagCtor(void)
 	atexit([]() { CrashDiagMarker("atexit: process exiting normally"); });
 	SetUnhandledExceptionFilter(CrashDiagUef);
 	_set_abort_behavior(0, _WRITE_ABORT_MSG);
+	std::set_terminate(CrashDiagTerminateHandler);
+	signal(SIGABRT, CrashDiagSignalHandler);
+	signal(SIGSEGV, CrashDiagSignalHandler);
+	signal(SIGFPE, CrashDiagSignalHandler);
+	signal(SIGILL, CrashDiagSignalHandler);
 	HANDLE h = OpenLogRaw();
 	if (h != INVALID_HANDLE_VALUE) {
 		SYSTEMTIME st;

@@ -65,3 +65,5 @@ extern "C" {
 // QR2 hosting status query used by the in-game chat HUD
 int getQR2HostingStatus(void) { return 0; }
 }
+
+const char* qr2_registered_key_list[32] = { 0 };
