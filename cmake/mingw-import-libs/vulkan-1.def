@@ -626,3 +626,5 @@ EXPORTS
     vkWaitSemaphoresKHR
     vkWriteAccelerationStructuresPropertiesKHR
     vkWriteMicromapsPropertiesEXT
+    vkGetPhysicalDeviceWin32PresentationSupportKHR
+    vkCreateWin32SurfaceKHR

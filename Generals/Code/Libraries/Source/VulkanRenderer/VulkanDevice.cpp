@@ -48,6 +48,7 @@ bool VulkanDevice::Initialize(HWND hwnd, int width, int height)
     if (!CreateInstance()) return false;
     if (!SelectPhysicalDevice()) return false;
     if (!CreateLogicalDevice()) return false;
+    if (!CreateSurface(hwnd)) return false;
     if (!CreateSwapchain(width, height)) return false;
     if (!CreateCommandPool()) return false;
     if (!CreateSyncObjects()) return false;
@@ -74,6 +75,7 @@ void VulkanDevice::Shutdown()
         if (view) vkDestroyImageView(m_device, view, nullptr);
     }
     if (m_swapchain) vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
+    if (m_surface && m_instance) vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
     if (m_commandPool) vkDestroyCommandPool(m_device, m_commandPool, nullptr);
     if (m_device) vkDestroyDevice(m_device, nullptr);
     if (m_instance) vkDestroyInstance(m_instance, nullptr);
@@ -198,23 +200,54 @@ bool VulkanDevice::CreateLogicalDevice()
     return true;
 }
 
+bool VulkanDevice::CreateSurface(HWND hwnd)
+{
+    if (!hwnd || !m_instance) return false;
+    m_hwnd = hwnd;
+    VkWin32SurfaceCreateInfoKHR sci = {};
+    sci.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+    sci.hinstance = GetModuleHandle(nullptr);
+    sci.hwnd = hwnd;
+    if (vkCreateWin32SurfaceKHR(m_instance, &sci, nullptr, &m_surface) != VK_SUCCESS) {
+        m_surface = VK_NULL_HANDLE;
+        return false;
+    }
+    return true;
+}
+
 bool VulkanDevice::CreateSwapchain(int width, int height)
 {
-    VkSurfaceCapabilitiesKHR caps;
-    VkSurfaceKHR surface = VK_NULL_HANDLE;
+    VkSurfaceCapabilitiesKHR caps = {};
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice, m_surface, &caps);
 
-    VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
-    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-    surfaceCreateInfo.hinstance = GetModuleHandle(nullptr);
-    surfaceCreateInfo.hwnd = nullptr;
-
-    m_swapchainExtent.width = static_cast<uint32_t>(width);
-    m_swapchainExtent.height = static_cast<uint32_t>(height);
+    m_swapchainExtent = caps.currentExtent;
+    if (m_swapchainExtent.width == 0xFFFFFFFFu) {
+        m_swapchainExtent.width = static_cast<uint32_t>(width);
+        m_swapchainExtent.height = static_cast<uint32_t>(height);
+    }
+    if (caps.minImageCount > 0) {
+        m_swapchainImageCount = 3 < caps.minImageCount ? caps.minImageCount : 3;
+        if (caps.maxImageCount > 0 && m_swapchainImageCount > caps.maxImageCount)
+            m_swapchainImageCount = caps.maxImageCount;
+    } else {
+        m_swapchainImageCount = 3;
+    }
     m_swapchainFormat = VK_FORMAT_B8G8R8A8_UNORM;
-    m_swapchainImageCount = 3;
+    {
+        uint32_t fmtCount = 0;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, m_surface, &fmtCount, nullptr);
+        if (fmtCount) {
+            std::vector<VkSurfaceFormatKHR> fmts(fmtCount);
+            vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, m_surface, &fmtCount, fmts.data());
+            bool have = false;
+            for (const auto& f : fmts) if (f.format == m_swapchainFormat) { have = true; break; }
+            if (!have) m_swapchainFormat = fmts[0].format;
+        }
+    }
 
     VkSwapchainCreateInfoKHR createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    createInfo.surface = m_surface;
     createInfo.minImageCount = m_swapchainImageCount;
     createInfo.imageFormat = m_swapchainFormat;
     createInfo.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;

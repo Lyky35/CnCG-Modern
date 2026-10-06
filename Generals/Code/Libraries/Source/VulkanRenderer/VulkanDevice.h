@@ -21,6 +21,8 @@ public:
     VkQueue GetGraphicsQueue() const { return m_graphicsQueue; }
     VkCommandPool GetCommandPool() const { return m_commandPool; }
     VkSwapchainKHR GetSwapchain() const { return m_swapchain; }
+    VkSurfaceKHR GetSurface() const { return m_surface; }
+    HWND GetHwnd() const { return m_hwnd; }
     uint32_t GetGraphicsQueueFamily() const { return m_graphicsQueueFamily; }
     uint32_t GetSwapchainImageCount() const { return m_swapchainImageCount; }
     VkImageView GetSwapchainImageView(uint32_t index) const { return m_swapchainImageViews[index]; }
@@ -36,11 +38,14 @@ private:
     bool CreateInstance();
     bool SelectPhysicalDevice();
     bool CreateLogicalDevice();
+    bool CreateSurface(HWND hwnd);
     bool CreateSwapchain(int width, int height);
     bool CreateCommandPool();
     bool CreateSyncObjects();
 
     VkInstance m_instance;
+    VkSurfaceKHR m_surface = VK_NULL_HANDLE;
+    HWND m_hwnd = nullptr;
     VkPhysicalDevice m_physicalDevice;
     VkDevice m_device;
     VkQueue m_graphicsQueue;
