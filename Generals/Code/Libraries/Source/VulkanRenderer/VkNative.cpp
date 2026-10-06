@@ -1351,7 +1351,28 @@ static HRESULT dx8dev_GetCreationParameters(void* self, void* p)
   memset(d, 0, sizeof(*d)); d->AdapterOrdinal = 0; d->DeviceType = D3DDEVTYPE_HAL; d->hFocusWindow = g->hwnd; d->BehaviorFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING; return D3D_OK; }
 static HRESULT dx8dev_ShowCursor(void* self, int b) { (void)self; return (HRESULT)(DWORD)(UINT)b; }
 static HRESULT dx8dev_SetCursorPosition(void* self, UINT x, UINT y, DWORD flags) { (void)self; (void)x; (void)y; (void)flags; return D3D_OK; }
-static HRESULT dx8dev_CreateAdditionalSwapChain(void* self, void* p, void** pp) { (void)self; (void)p; if (pp) *pp = nullptr; return D3DERR_NOTAVAILABLE; }
+static HRESULT dx8dev_GetBackBuffer(void* self, UINT swap, UINT type, void** pp);
+struct SwapObj { void** vtbl; volatile LONG refs; void* dev; };
+static HRESULT dx8sc_QueryInterface(void* self, const void* riid, void** ppv)
+{ (void)self; (void)riid; if (!ppv) return D3DERR_INVALIDCALL; *ppv = self; InterlockedIncrement(&((SwapObj*)self)->refs); return D3D_OK; }
+static ULONG dx8sc_AddRef(void* self) { return (ULONG)InterlockedIncrement(&((SwapObj*)self)->refs); }
+static ULONG dx8sc_Release(void* self)
+{
+    SwapObj* sc = (SwapObj*)self;
+    ULONG r = (ULONG)InterlockedDecrement(&sc->refs);
+    if (!r) free(sc);
+    return r;
+}
+static HRESULT dx8sc_Present(void* self, const void* a, const void* b, void* c, const void* d)
+{ (void)self; (void)a; (void)b; (void)c; (void)d; return D3D_OK; /* presented in EndScene */ }
+static HRESULT dx8sc_GetBackBuffer(void* self, UINT swap, UINT type, void** pp)
+{ SwapObj* sc = (SwapObj*)self; return dx8dev_GetBackBuffer(sc->dev, swap, type, pp); }
+static HRESULT dx8sc_GetCreationParameters(void* self, void* p) { (void)self; (void)p; return D3D_OK; }
+static HRESULT dx8sc_GetPresentationInterval(void* self, int* interval)
+{ SwapObj* sc = (SwapObj*)self; (void)sc; if (interval) *interval = 0; return D3D_OK; }
+
+static HRESULT dx8dev_CreateAdditionalSwapChain(void* self, void* p, void** pp)
+{ (void)p; if (!pp) return D3DERR_INVALIDCALL; SwapObj* sc = (SwapObj*)calloc(1, sizeof(SwapObj)); sc->refs = 1; sc->dev = self; *pp = sc; return D3D_OK; }
 static HRESULT dx8dev_Reset(void* self, void* ppPresent)
 {
     (void)self;
@@ -2040,8 +2061,8 @@ HRESULT VKSurface::GetContainer(REFIID riid, void ** ppContainer) { return dx8sf
 HRESULT VKSurface::GetDesc(D3DSURFACE_DESC * pDesc) { return dx8sf_GetDesc((void*)this, pDesc); }
 HRESULT VKSurface::LockRect(D3DLOCKED_RECT *locked_rect, const RECT *rect, DWORD flags) { return dx8sf_LockRect((void*)this, locked_rect, rect, flags); }
 HRESULT VKSurface::UnlockRect() { return dx8sf_UnlockRect((void*)this); }
-HRESULT VKSwapChain::QueryInterface(REFIID riid, void** ppvObject) { (void)0; return (HRESULT)0x80070032L; }
-ULONG VKSwapChain::AddRef() { (void)0; return (ULONG)0; }
-ULONG VKSwapChain::Release() { (void)0; return (ULONG)0; }
-HRESULT VKSwapChain::Present(const RECT *src_rect, const RECT *dst_rect, HWND dst_window_override, const RGNDATA *dirty_region) { (void)0; return (HRESULT)0x80070032L; }
-HRESULT VKSwapChain::GetBackBuffer(UINT BackBuffer, D3DBACKBUFFER_TYPE Type, struct VKSurface ** ppBackBuffer) { (void)0; return (HRESULT)0x80070032L; }
+HRESULT VKSwapChain::QueryInterface(REFIID riid, void** ppvObject) { return dx8sc_QueryInterface((void*)this, &riid, ppvObject); }
+ULONG VKSwapChain::AddRef() { return dx8sc_AddRef((void*)this); }
+ULONG VKSwapChain::Release() { return dx8sc_Release((void*)this); }
+HRESULT VKSwapChain::Present(const RECT *src_rect, const RECT *dst_rect, HWND dst_window_override, const RGNDATA *dirty_region) { return dx8sc_Present((void*)this, nullptr, nullptr, nullptr, nullptr); }
+HRESULT VKSwapChain::GetBackBuffer(UINT BackBuffer, D3DBACKBUFFER_TYPE Type, struct VKSurface ** ppBackBuffer) { return dx8sc_GetBackBuffer((void*)this, BackBuffer, (UINT)Type, (void**)ppBackBuffer); }

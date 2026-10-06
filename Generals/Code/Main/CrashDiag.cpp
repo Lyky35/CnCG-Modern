@@ -97,8 +97,8 @@ struct LdrEntryFull {
 	void* EntryPoint;
 	ULONG SizeOfImage;
 	ULONG Flags;
-	struct { ULONG Len, Max; void* Pad; wchar_t* Buf; } FullDllName;
-	struct { ULONG Len, Max; void* Pad; wchar_t* Buf; } DllName;
+	struct { USHORT Len; USHORT Max; wchar_t* Buf; } FullDllName;
+	struct { USHORT Len; USHORT Max; wchar_t* Buf; } DllName;
 };
 
 static BOOL ModuleNameFor(ULONG64 addr, char* out, int outSz, ULONG64* modBase)
@@ -113,7 +113,7 @@ static BOOL ModuleNameFor(ULONG64 addr, char* out, int outSz, ULONG64* modBase)
 		ULONG64 b = (ULONG64)e->DllBase;
 		if (addr >= b && addr < b + e->SizeOfImage) {
 			if (modBase) *modBase = b;
-			int n = (int)(e->DllName.Len & 0xFFFF) / 2;
+			int n = (int)e->DllName.Len / 2;
 			if (n > outSz - 1) n = outSz - 1;
 			if (n > 0 && IsReadable((ULONG64)e->DllName.Buf, n * 2)) {
 				for (int i = 0; i < n; ++i) out[i] = (char)e->DllName.Buf[i];
@@ -155,7 +155,7 @@ static void DumpModules(HANDLE h)
 	ULONG64 link = (ULONG64)ldr->InMemoryOrderModuleList.Flink;
 	for (int guard = 0; guard < 512 && link && link != head && IsReadable(link, sizeof(LdrEntryFull)); ++guard) {
 		LdrEntryFull* e = (LdrEntryFull*)((char*)link - offsetof(LdrEntryFull, InMemoryOrderLinks));
-		char name[64]; int n = (int)(e->DllName.Len & 0xFFFF) / 2; if (n > 63) n = 63;
+		char name[64]; int n = (int)e->DllName.Len / 2; if (n > 63) n = 63;
 		if (n > 0 && IsReadable((ULONG64)e->DllName.Buf, n * 2)) {
 			for (int i = 0; i < n; ++i) name[i] = (char)e->DllName.Buf[i];
 			name[n] = 0;
@@ -201,34 +201,6 @@ static void CrashDiagUnwindAndScrape(HANDLE h, CONTEXT* c)
 	HMODULE ntdll = GetModuleHandleA("ntdll.dll");
 	LookupFn lookup = (LookupFn)GetProcAddress(ntdll, "RtlLookupFunctionEntry");
 	UnwindFn unwind = (UnwindFn)GetProcAddress(ntdll, "RtlVirtualUnwind");
-	if (lookup && unwind) {
-		CONTEXT cur = *c;
-		for (int i = 0; i < 40; ++i) {
-			ULONG64 ib = 0;
-			PRUNTIME_FUNCTION rf = lookup(cur.Rip, &ib, NULL);
-			if (!rf) break;
-			ULONG64 est = 0;
-			unwind(0, ib, cur.Rip, rf, &cur, &est, NULL, NULL);
-			if (!cur.Rip) break;
-			LogFrame(h, "  frame", cur.Rip);
-		}
-	}
-	ULONG64 rbp = c->Rbp;
-	for (int i = 0; i < 80; ++i) {
-		if (rbp & 7) break;
-		if (!IsReadable(rbp, 16)) break;
-		ULONG64 nextRbp = *(ULONG64*)rbp;
-		ULONG64 retAddr = *(ULONG64*)(rbp + 8);
-		if (nextRbp <= rbp) break;
-		LogFrame(h, "  rbp-frame", retAddr);
-		rbp = nextRbp;
-	}
-	if (c->Rip == 0) {
-		WriteStr(h, "  null-call return candidates at [rsp]:\n");
-		for (int i = 0; i < 4; ++i)
-			if (IsReadable(c->Rsp + (ULONG64)i * 8, 8))
-				LogFrame(h, "    [rsp]", *(ULONG64*)(c->Rsp + (ULONG64)i * 8));
-	}
 	WriteStr(h, "  stack scrape (RTS.exe code addresses only):\n");
 	ULONG64 prev = 0;
 	int printed = 0;
@@ -239,6 +211,24 @@ static void CrashDiagUnwindAndScrape(HANDLE h, CONTEXT* c)
 			LogFrame(h, "    *", v);
 			prev = v;
 			++printed;
+		}
+	}
+	if (c->Rip == 0) {
+		WriteStr(h, "  null-call return candidates at [rsp]:\n");
+		for (int i = 0; i < 4; ++i)
+			if (IsReadable(c->Rsp + (ULONG64)i * 8, 8))
+				LogFrame(h, "    [rsp]", *(ULONG64*)(c->Rsp + (ULONG64)i * 8));
+	}
+	if (lookup && unwind) {
+		CONTEXT cur = *c;
+		for (int i = 0; i < 40; ++i) {
+			ULONG64 ib = 0;
+			PRUNTIME_FUNCTION rf = lookup(cur.Rip, &ib, NULL);
+			if (!rf) break;
+			ULONG64 est = 0;
+			unwind(0, ib, cur.Rip, rf, &cur, &est, NULL, NULL);
+			if (!cur.Rip) break;
+			LogFrame(h, "  frame", cur.Rip);
 		}
 	}
 }
