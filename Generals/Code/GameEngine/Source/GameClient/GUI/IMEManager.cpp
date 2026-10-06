@@ -125,8 +125,8 @@ class IMEManager : public IMEManagerInterface
 		/// Checks for and services IME messages. Returns TRUE if message serviced
 		virtual Bool serviceIMEMessage(	void *windowsHandle, 
 												UnsignedInt message,
-												Int wParam,
-												Int lParam );
+													unsigned long long wParam,
+												unsigned long long lParam );
 		virtual Int result( void );														///< result return value of last serviced IME message
 
 	protected:
@@ -195,7 +195,7 @@ class IMEManager : public IMEManagerInterface
 		static MessageInfo		m_setSmodeInfo[];
 		Char*					getMessageName( MessageInfo *msgTable, Int value );
 		void					buildFlagsString( IMEManager::MessageInfo *msgTable, Int value, AsciiString &string );
-		void					printMessageInfo( Int message, Int wParam, Int lParam );
+		void					printMessageInfo( Int message, unsigned long long wParam, unsigned long long lParam );
 		void					printConversionStatus( void );
 		void					printSentenceStatus( void );
 	#endif
@@ -392,7 +392,7 @@ void		IMEManager::buildFlagsString( IMEManager::MessageInfo *msgTable, Int value
 // IMEManager::printMessageInfo
 //============================================================================
 
-void		IMEManager::printMessageInfo( Int message, Int wParam, Int lParam )
+void		IMEManager::printMessageInfo( Int message, unsigned long long wParam, unsigned long long lParam )
 {
 	Char *messageText = getMessageName( m_mainMessageInfo, message);
 
@@ -669,7 +669,7 @@ void IMEManager::detatch( void )
 // IMEManager::serviceIMEMessage
 //============================================================================
 
-Bool IMEManager::serviceIMEMessage(	void *windowsHandle, UnsignedInt message,	Int wParam,	Int lParam )
+Bool IMEManager::serviceIMEMessage(	void *windowsHandle, UnsignedInt message,	unsigned long long wParam,	unsigned long long lParam )
 {
 
 	DEBUG_ASSERTCRASH( windowsHandle == ApplicationHWnd, ("Unexpected window handle for IMEManager") );

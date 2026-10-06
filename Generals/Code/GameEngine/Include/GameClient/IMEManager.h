@@ -102,8 +102,8 @@ class IMEManagerInterface : public SubsystemInterface
 		/// Checks for and service IME messages. Returns TRUE if message serviced
 		virtual Bool serviceIMEMessage(	void *windowsHandle, 
 												UnsignedInt message,
-												Int wParam,
-												Int lParam ) = 0;
+													unsigned long long wParam,
+												unsigned long long lParam ) = 0;
 		virtual Int result( void ) = 0;							///< result return value of last serviced IME message
 };
 

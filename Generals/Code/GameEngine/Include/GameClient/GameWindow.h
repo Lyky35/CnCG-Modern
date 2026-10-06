@@ -75,7 +75,9 @@ enum { WIN_COLOR_UNDEFINED = GAME_COLOR_UNDEFINED };
 
 // WindowMsgData --------------------------------------------------------------
 //-----------------------------------------------------------------------------
-typedef UnsignedInt WindowMsgData;
+// x64: WindowMsgData carries object POINTERS through the GUI message queue;
+// a 32-bit type silently truncates them (crashes on first cast-back).
+typedef unsigned long long WindowMsgData;
 
 //-----------------------------------------------------------------------------
 enum WindowMsgHandledType { MSG_IGNORED, MSG_HANDLED };

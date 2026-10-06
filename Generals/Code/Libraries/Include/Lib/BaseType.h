@@ -172,6 +172,7 @@ typedef unsigned __int64	UnsignedInt64;	  	// 8 bytes
 // MSVC's wchar_t is 16-bit (UTF-16 code units), which the engine's string
 // layer assumes. MinGW's wchar_t is 32-bit, so use unsigned short there.
 typedef unsigned short WideChar;  ///< multi-byte character representations
+
 #else
 typedef wchar_t WideChar;  ///< multi-byte character representations
 #endif
