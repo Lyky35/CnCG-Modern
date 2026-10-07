@@ -570,8 +570,11 @@ DECLARE_PERF_TIMER(GameEngine_update)
  * @todo Allow the client to run as fast as possible, but limit the execution
  * of TheNetwork and TheGameLogic to a fixed framerate.
  */
+extern void CrashDiagTick(void);
+
 void GameEngine::update( void )
-{ 
+{
+	CrashDiagTick(); 
 	USE_PERF_TIMER(GameEngine_update)
 	{
 

@@ -13,6 +13,7 @@
 //   - clean exits (atexit breadcrumb) and WinMain's swallowed catch(...)
 
 #include <windows.h>
+#include <tlhelp32.h>
 #include <winternl.h>
 #include <intrin.h>
 #include <stdio.h>
@@ -51,6 +52,7 @@ static void CrashDiagInit(void)
 	}
 }
 
+static HANDLE cdStallLog(void);
 static HANDLE OpenLogRaw(void)
 {
 	CrashDiagInit();
@@ -327,6 +329,143 @@ static void CrashDiagMarkerInner(const char* msg)
 	WriteStr(h, msg);
 	WriteStr(h, "\n");
 	CloseHandle(h);
+}
+
+
+// ---- stall watchdog ----
+static volatile LONG g_cdTicks = 0;
+static volatile LONG g_cdLastSeenTicks = 0;
+static volatile LONG g_cdLastTickChangeMs = 0;
+static volatile LONG g_cdStallDumps = 0;
+
+static LONG CdTickCountMs(void)
+{
+	return (LONG)GetTickCount();
+}
+
+static HANDLE cdStallLog(void){ return OpenLogRaw(); }
+static void CdDumpThreadContext(HANDLE thr, DWORD tid, BOOL isMain)
+{
+	CONTEXT ctx;
+	memset(&ctx, 0, sizeof(ctx));
+	ctx.ContextFlags = CONTEXT_FULL;
+	if (!GetThreadContext(thr, &ctx)) {
+		char line[80];
+		wsprintfA(line, "  thread %u (ctx unavailable, isMain=%d)\n", (unsigned)tid, (int)isMain);
+		WriteStr(cdStallLog(), line);
+		return;
+	}
+	char line[80];
+	wsprintfA(line, "  thread %u%s:\n", (unsigned)tid, isMain ? " (MAIN)" : "");
+	WriteStr(cdStallLog(), line);
+	LogFrame(cdStallLog(), "    rip", (ULONG64)ctx.Rip);
+	// unwind
+	typedef PRUNTIME_FUNCTION (WINAPI *LookupFn)(ULONG64, PULONG64, PVOID);
+	typedef VOID (WINAPI *UnwindFn)(ULONG, ULONG64, ULONG64, PRUNTIME_FUNCTION,
+	                                PCONTEXT, PULONG64, PVOID, PVOID);
+	HMODULE ntdll = GetModuleHandleA("ntdll.dll");
+	LookupFn lookup = (LookupFn)GetProcAddress(ntdll, "RtlLookupFunctionEntry");
+	UnwindFn unwind = (UnwindFn)GetProcAddress(ntdll, "RtlVirtualUnwind");
+	if (lookup && unwind) {
+		CONTEXT cur = ctx;
+		for (int i = 0; i < 24; ++i) {
+			ULONG64 ib = 0;
+			PRUNTIME_FUNCTION rf = lookup(cur.Rip, &ib, NULL);
+			if (!rf) break;
+			ULONG64 est = 0;
+			unwind(0, ib, cur.Rip, rf, &cur, &est, NULL, NULL);
+			if (!cur.Rip) break;
+			LogFrame(cdStallLog(), "    frame", (ULONG64)cur.Rip);
+		}
+	}
+}
+
+static HANDLE cdStallLog(void);
+
+static void CdDumpAllThreads(void)
+{
+	HANDLE h = cdStallLog();
+	if (h == INVALID_HANDLE_VALUE) return;
+	DWORD mainTid = GetCurrentThreadId();
+	HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+	if (snap != INVALID_HANDLE_VALUE) {
+		THREADENTRY32 te; te.dwSize = sizeof(te);
+		if (Thread32First(snap, &te)) {
+			do {
+				if (te.th32OwnerProcessID != GetCurrentProcessId()) continue;
+				HANDLE thr = OpenThread(THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT | THREAD_QUERY_INFORMATION,
+					FALSE, te.th32ThreadID);
+				if (!thr) continue;
+				SuspendThread(thr);
+				CONTEXT c2; memset(&c2,0,sizeof(c2)); c2.ContextFlags = CONTEXT_FULL;
+				if (GetThreadContext(thr, &c2)) {
+					char line[96];
+					wsprintfA(line, "  thread %u%s rip=", te.th32ThreadID, te.th32ThreadID==mainTid?" (MAIN)":"");
+					WriteStr(h, line);
+					ULONG64 rip = (ULONG64)c2.Rip;
+					// rip of suspended thread is its wait return address; also walk
+					if (rip >= g_imageBase && rip < g_imageBase + g_imageSize) {
+						wsprintfA(line, "RTS.exe+0x%x\n", (unsigned int)(rip - g_imageBase));
+						WriteStr(h, line);
+					} else {
+						char name[64]; ULONG64 mb = 0;
+						if (ModuleNameFor(rip, name, sizeof(name), &mb)) {
+							wsprintfA(line, "%s+0x%x\n", name, (unsigned int)(rip - mb));
+							WriteStr(h, line);
+						} else { WriteHexU(h, rip); }
+					}
+					// stack scrape for this thread
+					for (ULONG64 a = (ULONG64)c2.Rsp; a < (ULONG64)c2.Rsp + 0x2000; a += 8) {
+						if (!IsReadable(a, 8)) break;
+						ULONG64 v = *(ULONG64*)a;
+						if (v > g_imageBase + 0x1000 && v < g_imageBase + g_imageSize) {
+							LogFrame(h, "      *", v);
+						}
+					}
+				} else {
+					char line[64];
+					wsprintfA(line, "  thread %u: no context\n", te.th32ThreadID);
+					WriteStr(h, line);
+				}
+				ResumeThread(thr);
+				CloseHandle(thr);
+			} while (Thread32Next(snap, &te));
+		}
+		CloseHandle(snap);
+	}
+	CloseHandle(h);
+}
+
+static DWORD WINAPI CdWatchdog(LPVOID)
+{
+	for (;;) {
+		Sleep(10000);
+		LONG now = CdTickCountMs();
+		LONG ticks = g_cdTicks;
+		if (ticks != g_cdLastSeenTicks) {
+			g_cdLastSeenTicks = ticks;
+			g_cdLastTickChangeMs = now;
+			continue;
+		}
+		if (now - g_cdLastTickChangeMs > 90000 && g_cdStallDumps < 4) {
+			g_cdStallDumps++;
+			HANDLE h = OpenLogRaw();
+			if (h != INVALID_HANDLE_VALUE) {
+				char line[96];
+				wsprintfA(line, "=== STALL DETECTED: no loop progress for %d ms (dumps=%d) ===\n",
+					(int)(now - g_cdLastTickChangeMs), (int)g_cdStallDumps);
+				WriteStr(h, line);
+				CloseHandle(h);
+			}
+			CdDumpAllThreads();
+		}
+	}
+	return 0;
+}
+
+void CrashDiagTick(void)
+{
+	InterlockedIncrement(&g_cdTicks);
 }
 
 void CrashDiagMarker(const char* msg)
